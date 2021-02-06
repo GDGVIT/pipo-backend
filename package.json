@@ -1,0 +1,33 @@
+{
+  "license": "MIT",
+  "scripts": {
+    "test": "semistandard && nyc --reporter=lcov mocha tests/*",
+    "lint": "semistandard --fix",
+    "start": "node server.js",
+    "coverage": "codecov"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "codecov": "^3.7.1",
+    "husky": "^4.3.8",
+    "mocha": "^7.1.2",
+    "nodemon": "^2.0.3",
+    "nyc": "^15.0.0",
+    "semistandard": "^14.2.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && git add .",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}
