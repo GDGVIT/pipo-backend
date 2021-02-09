@@ -1,6 +1,6 @@
 <p align="center">
 	<img src="https://user-images.githubusercontent.com/30529572/92081025-fabe6f00-edb1-11ea-9169-4a8a61a5dd45.png" />
-	<h2 align="center">PiPo web backend</h2>
+	<h2 align="center"> 🐧PiPo ~ Post In Post Out web backend</h2>
 	<h4 align="center">This is a service to create your personalized scrapbook.<h4>
 </p>
 
@@ -8,7 +8,9 @@
 [![codecov](https://codecov.io/gh/GDGVIT/node-template/branch/master/graph/badge.svg)](https://codecov.io/gh/GDGVIT/node-template)
 [![GitHub Super-Linter](https://github.com/GDGVIT/node-template/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
-<p>This repository is under development.</p>
+<p align="center">An online scrapbook website where the user chooses a challenge and tries to maintain the streak for the number of days the challenge specifies. Upon completing the challenge the user earns the badge which will be displayed in the user's profile. Incase the user loses the streak the user can reclaim it by spending points for that day and in order to obtain points the user has to challenge other users to a contest of their choice and the winner will be decided by the public.</p>
+
+<p align="center">This repository is under development.</p>
 
 ## Functionalities and routes
 
@@ -127,3 +129,7 @@ Pragati Bhattad
 </td>
 </tr>
 </table>
+
+<p align="center">
+	Made with :heart: by <a href="https://dscvit.com">DSC VIT</a>
+</p>
