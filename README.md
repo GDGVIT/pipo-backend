@@ -79,7 +79,7 @@ npm start
 ```
 Your app should now be running on [localhost:8080](http://localhost:8080/).
 
-## Deploying to Heroku
+<!-- ## Deploying to Heroku
 
 ```
 heroku create
@@ -90,7 +90,7 @@ heroku open
 Alternatively, you can deploy your own copy of the app using the web-based flow:
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
+ -->
 
 ## Additional Information
 
