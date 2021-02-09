@@ -1,43 +1,96 @@
 <p align="center">
 	<img src="https://user-images.githubusercontent.com/30529572/92081025-fabe6f00-edb1-11ea-9169-4a8a61a5dd45.png" />
-	<h2 align="center">Node.JS template</h2>
-	<h4 align="center">A template to quickstart Node.JS REST APIs<h4>
+	<h2 align="center">PiPo web backend</h2>
+	<h4 align="center">This is a service to create your personalized scrapbook.<h4>
 </p>
 
 ![Tests](https://github.com/GDGVIT/node-template/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/GDGVIT/node-template/branch/master/graph/badge.svg)](https://codecov.io/gh/GDGVIT/node-template)
 [![GitHub Super-Linter](https://github.com/GDGVIT/node-template/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
+<p>This repository is under development.</p>
 
-## Functionality
+## Functionalities and routes
 
-- Idiomatic and configurable logging
-- Response compression
-- Sane linting and styling guidelines
-- Continuous integration using github actions
-- Tests
-- Code coverage
+- [ ]  Auth route (name, email)
+    - [ ]  Post(signup)
+    - [ ]  Post(login)
+- [ ]  Posts route
+    - [ ]  Get all users + recent posts route(sorted by points)
+- [ ]  User route (username, name, email, completed badges[badgeName], in-progress badges, followers, following, friends)
+    - [ ]  Get details
+- [ ]  Users route
+    - [ ]  Get all posts for a user (sorted by date/time)
 
-## Running the server
+---
 
+- [ ]  Badge
+    - [ ]  (deprecated route) Create a badge
+    - [ ]  Join a badge ( user-badge )
+    - [ ]  Create a post (route change)
+- [ ]  Get posts for a badge
+    - [ ]  Get request
+- [ ]  Post a post
+    - [ ]  Post request
+
+---
+
+- [ ]  Route for checking time
+- [ ]  Challenge
+    - [ ]  Post create a challenge
+    - [ ]  Send a challenge
+    - [ ]  Accept a challenge
+    - [ ]  Timer for the challenge
+    - [ ]  Complete in the challenge(win/loose), change point structure
+- [ ]  Leaderboard
+    - [ ]  Get all ongoing and upcoming challenges
+
+---
+
+## Getting started
+
+### Instructions to run
+
+- Pre-requisites
+  - Node.js installed with npm enabled, version used during devlopment:
+    - Node.js v10.19.0
+    - npm v6.14.4
+  - An active internet connection to connect to the database - All the npm packages mentioned in the package.json
+
+- Clone the repo
+
+- Command to setup the environment
 ```bash
-npm start
+npm init
 ```
 
-**Note**: This will run a server in the development environment.
-For information on deploying an express application to production, take a look [here](https://expressjs.com/en/advanced/best-practice-performance.html).
+- Command to install dependencies
+```bash
+npm install
+```
 
-## Logging
+- Add a .env file with contents as present in the sample .env
 
-This directory has 2 files.
+- Command to run the server in the development environment
+```bash
+npm run devStart
+# or
+npm start
+```
+Your app should now be running on [localhost:8080](http://localhost:8080/).
 
-- `logger.js` exports a winston object which we use for logging. You should modify logger.js to customize your logging configuration.
-- `morgan.js` exports a pre-configured morgan object to write logs using a stream to winston. It is used to intercept http requests and log the request and response details.
-  For more details, visit the official page for [morgan](https://www.npmjs.com/package/morgan).
+## Deploying to Heroku
 
-## Routes
+```
+heroku create
+git push heroku master
+heroku open
+```
 
-Directory for defining routes. I don't think this needs more explanation.
+Alternatively, you can deploy your own copy of the app using the web-based flow:
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 
 ## Additional Information
 
@@ -50,45 +103,27 @@ Directory for defining routes. I don't think this needs more explanation.
   This makes it easier to run locally installed command packages.
   This won't be required in many IDEs like Webstorm, but we thought it's a good idea to include it anyway.
 
-- [standard.js](https://npmjs.com/package/standard) has been added as the default linting and styling tool.
-
-  Usage:
-
-  ```bash
-  npm run lint
-  ```
-
-  Formats the entire project, and logs out anything it couldn't fix.
-
-- [mocha](https://npmjs.com/package/mocha) is used for testing and [chai](https://npmjs.com/package/chai) is used for assertion.
-  [chai-http](https://npmjs.com/package/chai) is used to test http endpoints.
-
-  Run all tests using:
+- Run all tests using:
 
   ```bash
   npm test
   ```
+## Contributors
 
-- [nyc](https://npmjs.com/package/nyc) is used as the default coverage tool.
+<table>
+<tr align="center">
 
-  Upload coverage report to codecov using:
-
-  ```bash
-  npm run coverage
-  ```
-
-  Note: You will need to add the `CODECOV_TOKEN` to your repository secrets for GitHub actions to work well, and export it as an environment variable to run it locally.
-
-## Dependencies
-
-| Dependency                                           | Usage                                                              |
-| ---------------------------------------------------- | ------------------------------------------------------------------ |
-| [body-parser](https://npm.com/package/body-parser)   | POST body parsing middleware. Adds body object to incoming request |
-| [compression](https://npmjs.com/package/compression) | Response compression middleware                                    |
-| [express](https://npmjs.com/package/express)         | Express REST API framework                                         |  |
-| [morgan](https://npmjs.com/package/morgan)           | HTTP request logger                                                |
-| [winston](https://npmjs.com/package/winston)         | General purpose logger for the application                         |
-| [nyc](https://npmjs.com/package/nyc)                 | Code Coverage tool                                                 |
-| [standard](https://npmjs.com/package/standard)       | Linting and styling tool.                                          |
-| [chai](https://npmjs.com/package/chai)               | Assertion Library                                                  |
-| [chai-http](https://npmjs.com/package/chai-http)     | Middleware for chai to test http endpoints                         |
+<td>
+Pragati Bhattad
+<p align="center">
+<img src = "https://dscvit.com/images/dsc-logo-square.svg" width="150" height="150" alt="Pragati Bhattad">
+</p>
+<p align="center">
+<a href = "https://github.com/Pragati1610"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
+<a href = "https://www.linkedin.com/in/pragati-bhattad-53a849198/">
+<img src = "http://www.iconninja.com/files/863/607/751/network-linkedin-social-connection-circular-circle-media-icon.svg" width="36" height="36"/>
+</a>
+</p>
+</td>
+</tr>
+</table>
