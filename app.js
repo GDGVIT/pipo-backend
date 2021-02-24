@@ -3,11 +3,14 @@ const compression = require('compression');
 const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
-const db = require('./db/db');
+const db = require('./db/db').default;
 const morgan = require('./logging/morgan');
 
+require('./models/relations');
+
 const routes = require('./routes');
-// const authRoute = require('./routes/authRoute');
+const badgeRoute = require('./routes/badgeRoute');
+const userRoute = require('./routes/userRoute');
 
 const app = express();
 
@@ -23,6 +26,7 @@ app.use(morgan);
 
 // Mount routes
 app.use('/', routes);
-// app.use('/auth', authRoute);
+app.use('/badge', badgeRoute);
+app.use('/user', userRoute);
 
 module.exports = app;
