@@ -12,7 +12,7 @@ const sequelize = new Sequelize({
       require: true,
       rejectUnauthorized: false
     }
-  }
-  // logging: false
+  },
+  logging: false
 });
 module.exports = sequelize;
