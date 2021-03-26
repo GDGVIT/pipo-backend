@@ -11,6 +11,7 @@ require('./models/relations');
 const routes = require('./routes');
 const badgeRoute = require('./routes/badgeRoute');
 const userRoute = require('./routes/userRoute');
+const todoRoute = require('./routes/todoRoute');
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.use(morgan);
 app.use('/', routes);
 app.use('/badge', badgeRoute);
 app.use('/user', userRoute);
+app.use('/todo', todoRoute);
 
 module.exports = app;

@@ -20,5 +20,4 @@ if (process.env.SYNC) {
     alter: true
   });
 }
-
 module.exports = { User, Badge, UserBadge };
