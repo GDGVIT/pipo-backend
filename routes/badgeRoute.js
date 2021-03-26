@@ -2,17 +2,20 @@ const badge = require('../controllers/badgeController');
 const express = require('express');
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+const jwtAuth = require('../middlewares/jwtAuthMiddleware');
+const adminAuth = require('../middlewares/adminAuthMiddleware');
+
+router.post('/', [jwtAuth, adminAuth], async (req, res) => {
   const response = await badge.createBadge(req.body);
   return res.status(response.isError ? 400 : 200).send(response);
 });
 
-router.get('/', async (req, res) => {
+router.get('/', [jwtAuth], async (req, res) => {
   const response = await badge.getAllBadges();
   return res.status(response.isError ? 400 : 200).send(response);
 });
 
-router.get('/:badgeId', async (req, res) => {
+router.get('/:badgeId', [jwtAuth], async (req, res) => {
   const response = await badge.getBadge(req.params.badgeId);
   return res.status(response.isError ? 400 : 200).send(response);
 });
