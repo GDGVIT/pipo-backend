@@ -110,5 +110,5 @@ dist
 # SSL Certificates
 certs/
 
-
+firebase.json
 public.html
