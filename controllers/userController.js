@@ -33,7 +33,9 @@ class UserController {
       console.log(user);
       const auth = {
         email,
-        name
+        name,
+        points: 20,
+        isAdmin: false
       };
       const createdUser = await User.create(auth);
       console.log(createdUser);
