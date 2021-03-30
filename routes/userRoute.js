@@ -20,7 +20,7 @@ function validate (req, res) {
 router.post('/oAuth', async (req, res) => {
   const user = await userController.createUser(req.body.idToken);
   if (!user.isError) {
-    const token = jwt.sign(JSON.stringify(user.createdAuth), process.env.JWT_PASS);
+    const token = jwt.sign(JSON.stringify(user.createdUser), process.env.JWT_PASS);
     user.token = token;
   }
   if (user.isLoggedIn) {
