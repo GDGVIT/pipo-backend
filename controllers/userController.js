@@ -7,12 +7,13 @@ var serviceAccount = require('../firebase.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://pipo-api-oauth-default-rtdb.firebaseio.com'
+  databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
 });
 
 class UserController {
   static async createUser (idToken) {
     try {
+      console.log(idToken);
       const adminInstance = await admin.auth();
       const userInfo = await adminInstance.verifyIdToken(idToken);
       const name = userInfo.name;

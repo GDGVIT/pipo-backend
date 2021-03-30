@@ -14,4 +14,14 @@ router.get('/', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response);
 });
 
+router.delete('/', [jwtAuth], async (req, res) => {
+  const response = await todo.deleteTodo(req.claims.userId);
+  return res.status(response.isError ? 400 : 200).send(response);
+});
+
+router.delete('/all', [jwtAuth], async (req, res) => {
+  const response = await todo.deleteAllTodos(req.claims.userId);
+  return res.status(response.isError ? 400 : 200).send(response);
+});
+
 module.exports = router;
