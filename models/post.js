@@ -1,5 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../db/db');
+const { Sequelize, DataTypes } = require('sequelize')
+const sequelize = require('../db/db')
 
 const schema = {
   postId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
@@ -8,13 +8,13 @@ const schema = {
   description: { type: DataTypes.STRING },
   userBadge: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER }
-};
+}
 
 const options = {
 
   timestamps: true
-};
+}
 
-const post = sequelize.define('Post', schema, options);
+const post = sequelize.define('Post', schema, options)
 
-module.exports = post;
+module.exports = post
