@@ -1,5 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../db/db');
+const { Sequelize, DataTypes } = require('sequelize')
+const sequelize = require('../db/db')
 
 const schema = {
   userBadgeId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
@@ -8,13 +8,13 @@ const schema = {
     default: true
   },
   daysLeft: { type: DataTypes.INTEGER }
-};
+}
 
 const options = {
 
   timestamps: true
-};
+}
 
-const userBadge = sequelize.define('UserBadge', schema, options);
+const userBadge = sequelize.define('UserBadge', schema, options)
 
-module.exports = userBadge;
+module.exports = userBadge

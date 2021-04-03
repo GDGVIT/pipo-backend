@@ -1,8 +1,8 @@
 {
     "license": "MIT",
     "scripts": {
-        "test": "semistandard && nyc --reporter=lcov mocha tests/*",
-        "lint": "semistandard --fix",
+        "lint": "npx standard --fix",
+        "test": "nyc --reporter=lcov mocha tests/*",
         "start": "node server.js",
         "coverage": "codecov",
         "devStart": "nodemon server"
@@ -26,26 +26,13 @@
         "winston": "^3.3.3"
     },
     "devDependencies": {
-        "@commitlint/cli": "^11.0.0",
-        "@commitlint/config-conventional": "^11.0.0",
-        "@typescript-eslint/eslint-plugin": "^4.15.0",
-        "@typescript-eslint/parser": "^4.15.0",
         "chai": "^4.2.0",
         "chai-http": "^4.3.0",
         "codecov": "^3.7.1",
-        "eslint": "^7.23.0",
-        "eslint-config-airbnb-base": "^14.2.1",
-        "eslint-config-prettier": "^8.1.0",
-        "eslint-config-standard": "^16.0.2",
-        "eslint-plugin-import": "^2.22.1",
-        "eslint-plugin-node": "^11.1.0",
-        "eslint-plugin-promise": "^4.3.1",
-        "eslint-plugin-standard": "^5.0.0",
         "husky": "^4.3.8",
         "mocha": "^7.1.2",
         "nodemon": "^2.0.3",
-        "nyc": "^15.0.0",
-        "semistandard": "^14.2.0"
+        "nyc": "^15.0.0"
     },
     "husky": {
         "hooks": {
