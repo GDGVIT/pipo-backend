@@ -12,6 +12,7 @@ const routes = require('./routes')
 const badgeRoute = require('./routes/badgeRoute')
 const userRoute = require('./routes/userRoute')
 const todoRoute = require('./routes/todoRoute')
+const followRoute = require('./routes/followRoute')
 
 const app = express()
 
@@ -30,5 +31,6 @@ app.use('/', routes)
 app.use('/badge', badgeRoute)
 app.use('/user', userRoute)
 app.use('/todo', todoRoute)
+app.use('/follow', followRoute)
 
 module.exports = app

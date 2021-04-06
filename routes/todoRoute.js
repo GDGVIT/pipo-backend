@@ -5,7 +5,6 @@ const jwtAuth = require('../middlewares/jwtAuthMiddleware')
 
 router.post('/', [jwtAuth], async (req, res) => {
   const response = await todo.createTodo(req.body.todo, req.claims.email)
-  console.log('ausg')
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
@@ -15,12 +14,12 @@ router.get('/', [jwtAuth], async (req, res) => {
 })
 
 router.delete('/', [jwtAuth], async (req, res) => {
-  const response = await todo.deleteTodo(req.claims.userId)
+  const response = await todo.deleteTodo(req.body.arrIndex, req.claims.email)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
 router.delete('/all', [jwtAuth], async (req, res) => {
-  const response = await todo.deleteAllTodos(req.claims.userId)
+  const response = await todo.deleteAllTodos(req.claims.email)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 

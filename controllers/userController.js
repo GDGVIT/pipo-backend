@@ -13,7 +13,6 @@ admin.initializeApp({
 class UserController {
   static async createUser (idToken) {
     try {
-      console.log(idToken)
       const adminInstance = await admin.auth()
       const userInfo = await adminInstance.verifyIdToken(idToken)
       const name = userInfo.name
@@ -61,7 +60,7 @@ class UserController {
       if (user) {
         return {
           isError: true,
-          message: 'This email already exists',
+          message: 'This email already exists, please login',
           status: 409
         }
       }
