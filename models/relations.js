@@ -27,5 +27,8 @@ if (process.env.SYNC) {
   UserBadge.sync({
     alter: true
   })
+  Post.sync({
+    alter: true
+  })
 }
-module.exports = { User, Badge, UserBadge }
+module.exports = { User, Badge, UserBadge, Post }
