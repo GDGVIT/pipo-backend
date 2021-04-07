@@ -5,11 +5,10 @@ const schema = {
   postId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
   title: { type: DataTypes.STRING },
   image: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false
+    type: DataTypes.ARRAY(DataTypes.STRING)
   },
   description: { type: DataTypes.STRING(128) },
-  userBadge: { type: DataTypes.STRING },
+  badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER }
 }
 
