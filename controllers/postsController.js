@@ -165,6 +165,29 @@ class PostsController {
       }
     }
   }
+
+  static async upvote (postId, userId) {
+    try {
+      let post = await Post.findByPk(postId)
+      if (!post.upvoted) {
+        post.upvoted = []
+      }
+      if (post.upvoted.includes(userId)) {
+        return { message: 'Already upvoted' }
+      }
+      const arr = {}
+      arr.upvoted = post.upvoted
+      arr.upvoted.push(userId)
+      post = await Post.update(arr, { where: { postId } })
+      return { post }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 }
 
 module.exports = PostsController
