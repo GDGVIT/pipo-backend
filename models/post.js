@@ -9,7 +9,9 @@ const schema = {
   },
   description: { type: DataTypes.STRING(128) },
   badgeName: { type: DataTypes.STRING },
-  postNumber: { type: DataTypes.INTEGER }
+  postNumber: { type: DataTypes.INTEGER },
+  tags: { type: DataTypes.ARRAY(DataTypes.STRING) },
+  upvoted: { type: DataTypes.ARRAY(DataTypes.UUID) }
 }
 
 const options = {

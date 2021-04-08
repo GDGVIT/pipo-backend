@@ -36,21 +36,22 @@ class PostsController {
             message: 'This challenge has been completed by you'
           }
         }
-        console.log('BBBB')
+
         userBadge.daysLeft = userBadge.daysLeft - 1
-        console.log(userBadge.daysLeft)
-        if (userBadge.daysLeft === 0) userBadge.inProgress = false
-        const resp = await UserBadge.update(userBadge, {
+        const obj = {
+          daysLeft: userBadge.daysLeft
+        }
+
+        if (userBadge.daysLeft === 0) { obj.inProgress = false }
+        const resp = await UserBadge.update(obj, {
           where: {
             BadgeBadgeId: badge.badgeId,
             UserUserId: post.userId
           }
         })
-        console.log(resp)
         post.postNumber = badge.days - userBadge.daysLeft
-        console.log(post.postNumber, badge.days, userBadge.daysLeft)
         const postCreated = await Post.create(post)
-        return { postCreated: postCreated }
+        return { postCreated: postCreated, resp: resp }
       }
       const postCreated = await Post.create(post)
       return { postCreated: postCreated }
