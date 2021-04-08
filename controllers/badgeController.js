@@ -1,4 +1,4 @@
-const { Badge } = require('../models/relations')
+const { Badge, UserBadge } = require('../models/relations')
 const logger = require('../logging/logger')
 
 class BadgeController {
@@ -42,6 +42,37 @@ class BadgeController {
       const badges = await Badge.findAll()
       console.log(badges)
       return badges
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getInProgressBadge (userId) {
+    try {
+      const resp = await UserBadge.findOne({
+        where: {
+          UserUserId: userId,
+          inProgress: true
+        }
+      })
+      return { resp }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getCompletedBadge (userId) {
+    try {
+      const resp = await UserBadge.findOne({ where: { UserUserId: userId, inProgress: false } })
+      return { resp }
     } catch (e) {
       logger.error(e)
       return {
