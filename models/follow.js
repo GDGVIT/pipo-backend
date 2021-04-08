@@ -2,8 +2,10 @@ const { Sequelize, DataTypes } = require('sequelize')
 const sequelize = require('../db/db')
 
 const schema = {
-  commentId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
-  comment: { type: DataTypes.STRING }
+  followId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
+  followerId: { type: DataTypes.UUID },
+  followingId: { type: DataTypes.UUID },
+  isFriend: { type: DataTypes.BOOLEAN }
 }
 
 const options = {

@@ -3,6 +3,8 @@ const User = require('./user')
 const Badge = require('./badge')
 const UserBadge = require('./userBadge')
 const Post = require('./post')
+const Comment = require('./comment')
+const Follow = require('./follow')
 
 User.Badge = User.belongsToMany(Badge, {
   through: UserBadge
@@ -15,7 +17,19 @@ User.Post = User.hasMany(Post, {
   foreignKey: 'userId',
   type: DataTypes.UUID
 })
-Post.User = Post.belongsTo(User)
+Post.User = Post.belongsTo(User, {
+  foreignKey: 'userId',
+  type: DataTypes.UUID
+})
+
+Post.Comment = Post.hasMany(Comment, {
+  foreignKey: 'postId',
+  type: DataTypes.UUID
+})
+Comment.Post = Comment.belongsTo(Post, {
+  foreignKey: 'postId',
+  type: DataTypes.UUID
+})
 
 if (process.env.SYNC) {
   User.sync({
@@ -30,5 +44,11 @@ if (process.env.SYNC) {
   Post.sync({
     alter: true
   })
+  Comment.sync({
+    alter: true
+  })
+  Follow.sync({
+    force: true
+  })
 }
-module.exports = { User, Badge, UserBadge, Post }
+module.exports = { User, Badge, UserBadge, Post, Comment, Follow }
