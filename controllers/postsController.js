@@ -1,4 +1,4 @@
-const { Post, Badge, UserBadge } = require('../models/relations')
+const { Post, Badge, UserBadge, User, Comment } = require('../models/relations')
 const logger = require('../logging/logger')
 
 class PostsController {
@@ -6,39 +6,40 @@ class PostsController {
     try {
       post.postNumber = 0
       if (post.badgeName) {
-        console.log('BB')
         const badge = await Badge.findOne({ where: { badgeName: post.badgeName } })
         if (!badge) {
-          console.log('AA')
           return {
             isError: true,
             message: 'Badge not found'
           }
         }
         let userBadge = await UserBadge.findOne({ where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId } })
+        console.log(userBadge)
         if (!userBadge) {
-          console.log('CC')
+          console.log(badge.days)
           const userBadgeContent = {
             BadgeBadgeId: badge.badgeId,
             UserUserId: post.userId,
             daysLeft: badge.days - 1,
             inProgress: true
           }
+          console.log(userBadgeContent.daysLeft)
           userBadge = await UserBadge.create(userBadgeContent)
           post.postNumber = badge.days - userBadge.daysLeft
+          console.log(post.postNumber, badge.days, userBadge.daysLeft)
+          const postCreated = await Post.create(post)
+          return { postCreated: postCreated }
         }
         if (userBadge.daysLeft === 0) {
-          console.log('DD')
           return {
             isError: true,
             message: 'This challenge has been completed by you'
           }
         }
-        userBadge.daysLeft -= 1
-
-        if (userBadge.daysLeft === 0) userBadge.inProgress = false
-
+        console.log('BBBB')
+        userBadge.daysLeft = userBadge.daysLeft - 1
         console.log(userBadge.daysLeft)
+        if (userBadge.daysLeft === 0) userBadge.inProgress = false
         const resp = await UserBadge.update(userBadge, {
           where: {
             BadgeBadgeId: badge.badgeId,
@@ -47,11 +48,26 @@ class PostsController {
         })
         console.log(resp)
         post.postNumber = badge.days - userBadge.daysLeft
+        console.log(post.postNumber, badge.days, userBadge.daysLeft)
+        const postCreated = await Post.create(post)
+        return { postCreated: postCreated }
       }
-      console.log(post.postNumber)
       const postCreated = await Post.create(post)
-      console.log(postCreated)
-      return postCreated
+      return { postCreated: postCreated }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async createComment (comment, userId) {
+    try {
+      comment.userId = userId
+      const commentCreated = await Comment.create(comment)
+      return commentCreated
     } catch (e) {
       logger.error(e)
       return {
@@ -62,19 +78,91 @@ class PostsController {
   }
 
   static async getAllPosts (userId) {
+    try {
+      const response = await Post.findAll({ userId })
+      return response
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 
+  static async sortXByY (arr) {
+    return arr.sort((a, b) => a.points - b.points)
   }
 
   static async getAllUsersLatestPosts () {
+    try {
+      let users = await User.findAll()
 
+      users = await this.sortXByY(users)
+      await console.log(users)
+      const posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId }
+        })
+        const last = post[post.length - 1]
+        return last
+      }))
+      return posts
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
   }
 
-  static async getPostsOfAChallange (badgeId) {
+  static async getMyLatestPost (userId) {
+    try {
+      const post = await Post.findAll({
+        where: { userId: userId }
+      })
+      const last = post[post.length - 1]
+      return last
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 
+  static async getPostsOfAChallange (badgeName, userId) {
+    try {
+      const post = await Post.findAll({
+        where: { userId: userId, badgeName: badgeName }
+      })
+      return post
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
   }
 
   static async getPost (postId) {
-
+    try {
+      const post = await Post.findByPk(postId)
+      const comments = await Comment.findAll({ where: { postId } })
+      return {
+        post,
+        comments
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
   }
 }
 

@@ -51,22 +51,42 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
     if (error) {
       return res.status(error.http_code).send(error.message)
     }
-    req.body.image = result.secure_url
-    req.body.UserUserId = req.claims.userId
+    req.body.image = [result.secure_url]
+    req.body.userId = req.claims.userId
     const response = await posts.createPost(req.body)
     fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
     return res.status(response.isError ? 400 : 200).json({ response })
   })
 })
 
-// router.get('/', [jwtAuth], async(req, res) => {
-//     const response = await posts.getAllBadges()
-//     return res.status(response.isError ? 400 : 200).send(response)
-// })
+router.post('/comments/', [jwtAuth], async (req, res) => {
+  const response = await posts.createComment(req.body, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).json({ response })
+})
 
-// router.get('/:badgeId', [jwtAuth], async(req, res) => {
-//     const response = await posts.getBadge(req.params.badgeId)
-//     return res.status(response.isError ? 400 : 200).send(response)
-// })
+router.get('/', [jwtAuth], async (req, res) => {
+  const response = await posts.getAllPosts(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/allLatestPosts', [jwtAuth], async (req, res) => {
+  const response = await posts.getAllUsersLatestPosts()
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/myLatestPost', [jwtAuth], async (req, res) => {
+  const response = await posts.getMyLatestPost(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/postsOfAChallange', [jwtAuth], async (req, res) => {
+  const response = await posts.getPostsOfAChallange(req.body.badgeName, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/getPost', [jwtAuth], async (req, res) => {
+  const response = await posts.getPost(req.body.postId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
 
 module.exports = router
