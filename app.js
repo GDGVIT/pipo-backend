@@ -14,6 +14,7 @@ const userRoute = require('./routes/userRoute')
 const todoRoute = require('./routes/todoRoute')
 const followRoute = require('./routes/followRoute')
 const postsRoute = require('./routes/postsRoute')
+const tagsRoute = require('./routes/tagsRoute')
 
 const app = express()
 
@@ -34,5 +35,6 @@ app.use('/user', userRoute)
 app.use('/todo', todoRoute)
 app.use('/follow', followRoute)
 app.use('/posts', postsRoute)
+app.use('/tags', tagsRoute)
 
 module.exports = app

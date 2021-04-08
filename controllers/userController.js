@@ -83,6 +83,20 @@ class UserController {
     }
   }
 
+  static async getUser (userId) {
+    try {
+      const user = await User.findByPk(userId)
+      return user
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        status: 400
+      }
+    }
+  }
+
   static async getAuthByEmail (auth) {
     try {
       const user = await User.findOne({ where: { email: auth.email, isAdmin: auth.isAdmin } })
