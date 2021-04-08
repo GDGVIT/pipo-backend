@@ -48,7 +48,7 @@ if (process.env.SYNC) {
     alter: true
   })
   Follow.sync({
-    force: true
+    alter: true
   })
 }
 module.exports = { User, Badge, UserBadge, Post, Comment, Follow }

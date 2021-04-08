@@ -1,5 +1,5 @@
 const userController = require('../controllers/userController')
-
+const { User } = require('../models/relations')
 const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
@@ -73,9 +73,9 @@ router.post('/login', async (req, res) => {
 //     return res.status(200).send(user);
 // })
 
-// router.get('/allAuths', async(req, res) => {
-//     const response = await userController.findAll();
-//     return res.status(200).send(response);
-// });
+router.get('/getAll', async (req, res) => {
+  const response = await User.findAll()
+  return res.status(200).send(response)
+})
 
 module.exports = router

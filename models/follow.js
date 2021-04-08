@@ -13,6 +13,6 @@ const options = {
   timestamps: true
 }
 
-const comment = sequelize.define('Comment', schema, options)
+const follow = sequelize.define('Follow', schema, options)
 
-module.exports = comment
+module.exports = follow

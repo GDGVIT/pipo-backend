@@ -3,19 +3,33 @@ const express = require('express')
 const router = express.Router()
 const jwtAuth = require('../middlewares/jwtAuthMiddleware')
 
-// To follow someone (wants to become a follow of another user (userId of the person to be followed is given))
-router.post('/follower/:followWhomId', [jwtAuth], async (req, res) => {
-  const response = await follow.followSomeone(req.claims.email, req.params.followWhomId)
+router.post('/toFollow/:followWhomId', [jwtAuth], async (req, res) => {
+  const response = await follow.followSomeone(req.claims.userId, req.params.followWhomId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/', [jwtAuth], async (req, res) => {
-  const response = await follow.getAllfollows(req.claims.userId)
+router.post('/makeFriend/:makeFriendId', [jwtAuth], async (req, res) => {
+  const response = await follow.makeFriend(req.claims.userId, req.params.makeFriendId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.delete('/', [jwtAuth], async (req, res) => {
-  const response = await follow.deletefollow(req.claims.userId)
+router.get('/followers', [jwtAuth], async (req, res) => {
+  const response = await follow.getAllFollowers(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/following', [jwtAuth], async (req, res) => {
+  const response = await follow.getAllFollowing(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.delete('/stopFollowing/:whom', [jwtAuth], async (req, res) => {
+  const response = await follow.stopFollowing(req.claims.userId, req.params.whom)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.delete('/stopFollower/:which', [jwtAuth], async (req, res) => {
+  const response = await follow.stopFollower(req.claims.userId, req.params.which)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
