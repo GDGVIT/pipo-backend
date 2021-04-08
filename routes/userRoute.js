@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken')
 const { check, validationResult } = require('express-validator')
 
 const bcrypt = require('bcrypt')
+const jwtAuth = require('../middlewares/jwtAuthMiddleware')
 
 function validate (req, res) {
   const error = validationResult(req)
@@ -75,6 +76,11 @@ router.post('/login', async (req, res) => {
 
 router.get('/getAll', async (req, res) => {
   const response = await User.findAll()
+  return res.status(200).send(response)
+})
+
+router.get('/getUser', [jwtAuth], async (req, res) => {
+  const response = await userController.getUser(req.claims.userId)
   return res.status(200).send(response)
 })
 
