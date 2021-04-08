@@ -89,4 +89,9 @@ router.get('/getPost', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.post('/upvote', [jwtAuth], async (req, res) => {
+  const response = await posts.upvote(req.body.postId, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 module.exports = router
