@@ -1,11 +1,18 @@
 {
+    "eslint.workingDirectories": [{ "mode": "auto" }],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "eslint.validate": [
+      "javascript"
+    ],
     "debug.allowBreakpointsEverywhere": true,
     "files.autoGuessEncoding": true,
     "files.exclude": {
-        "**/.vscode": true,
-        "compile_commands.json": true,
-        "*.hrccproj": true,
-        "*.sln": true,
-        "*.suo": true
+      "**/.vscode": true,
+      "compile_commands.json": true,
+      "*.hrccproj": true,
+      "*.sln": true,
+      "*.suo": true
     }
 }

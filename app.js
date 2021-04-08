@@ -1,28 +1,40 @@
-const express = require('express');
-const compression = require('compression');
-const cors = require('cors');
-const dotenv = require('dotenv');
-dotenv.config();
-const db = require('./db/db');
-const morgan = require('./logging/morgan');
+const express = require('express')
+const compression = require('compression')
+const cors = require('cors')
+const dotenv = require('dotenv')
+dotenv.config()
+const db = require('./db/db').default
+const morgan = require('./logging/morgan')
 
-const routes = require('./routes');
-// const authRoute = require('./routes/authRoute');
+require('./models/relations')
 
-const app = express();
+const routes = require('./routes')
+const badgeRoute = require('./routes/badgeRoute')
+const userRoute = require('./routes/userRoute')
+const todoRoute = require('./routes/todoRoute')
+const followRoute = require('./routes/followRoute')
+const postsRoute = require('./routes/postsRoute')
+const tagsRoute = require('./routes/tagsRoute')
+
+const app = express()
 
 // Connection
-app.locals.db = db;
+app.locals.db = db
 
 // Middlewares
-app.use(express.json());
-app.use(compression());
-app.use(cors());
+app.use(express.json())
+app.use(compression())
+app.use(cors())
 // Logging
-app.use(morgan);
+app.use(morgan)
 
 // Mount routes
-app.use('/', routes);
-// app.use('/auth', authRoute);
+app.use('/', routes)
+app.use('/badge', badgeRoute)
+app.use('/user', userRoute)
+app.use('/todo', todoRoute)
+app.use('/follow', followRoute)
+app.use('/posts', postsRoute)
+app.use('/tags', tagsRoute)
 
-module.exports = app;
+module.exports = app
