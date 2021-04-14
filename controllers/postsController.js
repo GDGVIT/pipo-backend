@@ -100,14 +100,19 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      await console.log(users)
       const posts = await Promise.all(users.map(async (user) => {
         const post = await Post.findAll({
           where: { userId: user.userId }
         })
         const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+          console.log(last)
+        }
         return last
       }))
+
       return posts
     } catch (e) {
       logger.error(e)

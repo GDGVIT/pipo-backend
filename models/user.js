@@ -3,6 +3,7 @@ const sequelize = require('../db/db')
 
 const schema = {
   userId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
+  userName: { type: DataTypes.STRING },
   name: { type: DataTypes.STRING },
   email: { type: DataTypes.STRING, allowNull: true },
   points: { type: DataTypes.INTEGER, allowNull: true, default: 20 },

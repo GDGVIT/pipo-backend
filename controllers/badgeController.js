@@ -53,7 +53,7 @@ class BadgeController {
 
   static async getInProgressBadge (userId) {
     try {
-      const resp = await UserBadge.findOne({
+      const resp = await UserBadge.findAll({
         where: {
           UserUserId: userId,
           inProgress: true
@@ -71,7 +71,7 @@ class BadgeController {
 
   static async getCompletedBadge (userId) {
     try {
-      const resp = await UserBadge.findOne({ where: { UserUserId: userId, inProgress: false } })
+      const resp = await UserBadge.findAll({ where: { UserUserId: userId, inProgress: false } })
       return { resp }
     } catch (e) {
       logger.error(e)
