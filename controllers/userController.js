@@ -117,6 +117,23 @@ class UserController {
       }
     }
   }
+
+  static async update (user, userId) {
+    try {
+      const resp = await User.update(user, {
+        where: {
+          userId
+        }
+      })
+      return resp
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 }
 
 module.exports = UserController

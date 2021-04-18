@@ -7,7 +7,7 @@ const schema = {
   image: {
     type: DataTypes.ARRAY(DataTypes.STRING)
   },
-  description: { type: DataTypes.STRING(128) },
+  description: { type: DataTypes.STRING(1200) },
   badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING) },
