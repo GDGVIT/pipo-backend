@@ -66,7 +66,8 @@ class PostsController {
 
   static async createComment (comment, userId) {
     try {
-      comment.userId = userId
+      const user = await User.findByPk(userId)
+      comment.userName = user.userName
       const commentCreated = await Comment.create(comment)
       return commentCreated
     } catch (e) {
@@ -113,7 +114,62 @@ class PostsController {
         return last
       }))
 
-      return posts
+      return { posts }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getXLatestPosts (noOfUsers) {
+    try {
+      let users = await User.findAll()
+
+      users = await this.sortXByY(users)
+      const posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId }
+        })
+        const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+        }
+        return last
+      }))
+      const num = parseInt(noOfUsers)
+      return { posts: posts.slice(0, num) }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getPostsByBadgeName (badgeId, noOfUsers) {
+    try {
+      const badge = await Badge.findByPk(badgeId)
+      let users = await User.findAll()
+
+      users = await this.sortXByY(users)
+      const posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId, badgeName: badge.badgeName }
+        })
+        const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+        }
+        return last
+      }))
+      const num = parseInt(noOfUsers)
+      return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
       return {
@@ -178,13 +234,36 @@ class PostsController {
         post.upvoted = []
       }
       if (post.upvoted.includes(userId)) {
-        return { message: 'Already upvoted' }
+        return { message: 'Already upvoted', statusCode: 409 }
       }
       const arr = {}
       arr.upvoted = post.upvoted
       arr.upvoted.push(userId)
       post = await Post.update(arr, { where: { postId } })
-      return { post }
+      return { post, statusCode: 200 }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async removeUpvote (postId, userId) {
+    try {
+      let post = await Post.findByPk(postId)
+      if (!post.upvoted) {
+        post.upvoted = []
+      }
+      if (post.upvoted.includes(userId)) {
+        const arr = {}
+        arr.upvoted = post.upvoted
+        arr.upvoted.pop(userId)
+        post = await Post.update(arr, { where: { postId } })
+        return { message: 'Vote removed', statusCode: 200 }
+      }
+      return { message: 'upvote before you remove the vote', statusCode: 409 }
     } catch (e) {
       logger.error(e)
       return {

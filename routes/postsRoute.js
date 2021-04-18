@@ -69,8 +69,18 @@ router.get('/', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/allLatestPosts', [jwtAuth], async (req, res) => {
+router.get('/allLatestPosts', async (req, res) => {
   const response = await posts.getAllUsersLatestPosts()
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/allLatestPosts/:noOfUsers', async (req, res) => {
+  const response = await posts.getXLatestPosts(req.params.noOfUsers)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/:badgeId/:noOfUsers', async (req, res) => {
+  const response = await posts.getPostsByBadgeName(req.params.badgeId, req.params.noOfUsers)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
@@ -84,14 +94,25 @@ router.get('/postsOfAChallange', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/getPost', [jwtAuth], async (req, res) => {
-  const response = await posts.getPost(req.body.postId)
+router.post('/getPost/:postId', [jwtAuth], async (req, res) => {
+  const response = await posts.getPost(req.params.postId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
 router.post('/upvote', [jwtAuth], async (req, res) => {
   const response = await posts.upvote(req.body.postId, req.claims.userId)
-  return res.status(response.isError ? 400 : 200).send(response)
+  if (response.isError) {
+    return res.status(400).send(response)
+  }
+  return res.status(response.statusCode).send(response)
+})
+
+router.post('/removeUpvote', [jwtAuth], async (req, res) => {
+  const response = await posts.removeUpvote(req.body.postId, req.claims.userId)
+  if (response.isError) {
+    return res.status(400).send(response)
+  }
+  return res.status(response.statusCode).send(response)
 })
 
 module.exports = router

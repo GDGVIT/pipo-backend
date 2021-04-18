@@ -74,6 +74,11 @@ router.post('/login', async (req, res) => {
 //     return res.status(200).send(user);
 // })
 
+router.patch('/update', [jwtAuth], async (req, res) => {
+  const response = await userController.update(req.body, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 router.get('/getAll', async (req, res) => {
   const response = await User.findAll()
   return res.status(200).send(response)
