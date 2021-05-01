@@ -11,7 +11,7 @@ const schema = {
   badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING) },
-  upvoted: { type: DataTypes.ARRAY(DataTypes.UUID) }
+  upvotes: { type: DataTypes.ARRAY(DataTypes.UUID) }
 }
 
 const options = {

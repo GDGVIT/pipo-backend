@@ -272,6 +272,25 @@ class PostsController {
       }
     }
   }
+
+  static async getComments (postId) {
+    try {
+      let comments = await Comment.findAll({ where: { postId: postId } })
+      let user
+      comments = await Promise.all(comments.map(async (comment) => {
+        user = await User.findOne({ userName: comment.userName })
+        comment.picture = user.picture
+        return comment
+      }))
+      return { comments }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 }
 
 module.exports = PostsController

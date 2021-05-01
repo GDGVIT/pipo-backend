@@ -45,18 +45,27 @@ const uploads = multer({
 })
 
 router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
-  await cloudinary.uploader.upload('./uploads/' +
-        req.claims.userId + req.file.originalname,
-  async function (error, result) {
-    if (error) {
-      return res.status(error.http_code).send(error.message)
-    }
-    req.body.image = [result.secure_url]
-    req.body.userId = req.claims.userId
-    const response = await posts.createPost(req.body)
-    fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
-    return res.status(response.isError ? 400 : 200).json({ response })
-  })
+  try {
+    await cloudinary.uploader.upload('./uploads/' +
+            req.claims.userId + req.file.originalname,
+    async function (error, result) {
+      if (error) {
+        return res.status(error.http_code).send(error.message)
+      }
+      req.body.image = [result.secure_url]
+      req.body.userId = req.claims.userId
+      const response = await posts.createPost(req.body)
+      fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
+      return res.status(response.isError ? 400 : 200).json({ response })
+    })
+  } catch (e) {
+    return res.status(400).send({ message: 'File not provided' })
+  }
+})
+
+router.patch('/', [jwtAuth], async (req, res) => {
+  const response = await posts.updatePost(req.body, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).json({ response })
 })
 
 router.post('/comments/', [jwtAuth], async (req, res) => {
@@ -113,6 +122,11 @@ router.post('/removeUpvote', [jwtAuth], async (req, res) => {
     return res.status(400).send(response)
   }
   return res.status(response.statusCode).send(response)
+})
+
+router.get('/getComments/:postId', [jwtAuth], async (req, res) => {
+  const response = await posts.getComments(req.params.postId)
+  return res.status(response.statusCode).send(response.response)
 })
 
 module.exports = router
