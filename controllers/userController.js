@@ -17,22 +17,21 @@ class UserController {
       const userInfo = await adminInstance.verifyIdToken(idToken)
       const name = userInfo.name
       const email = userInfo.email
-
+      const picture = userInfo.picture
       const user = await User.findOne({ where: { email: email } })
 
       if (user) {
         return {
-          isError: true,
           message: 'This email already exists',
-          status: 409,
           isLoggedIn: true,
-          user
+          user,
+          status: 200
         }
       }
-      console.log(user)
       const auth = {
         email,
         name,
+        picture,
         points: 20,
         isAdmin: false
       }
@@ -42,7 +41,7 @@ class UserController {
         message: 'User created',
         userInfo,
         createdUser,
-        status: 200
+        status: 201
       }
     } catch (e) {
       logger.error(e)
@@ -86,7 +85,10 @@ class UserController {
   static async getUser (userId) {
     try {
       const user = await User.findByPk(userId)
-      return user
+      if (user) {
+        return user
+      }
+      return { message: "User doesn't exist", isError: true }
     } catch (e) {
       logger.error(e)
       return {
