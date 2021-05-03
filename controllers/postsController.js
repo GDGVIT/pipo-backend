@@ -36,11 +36,11 @@ class PostsController {
             message: 'This challenge has been completed by you'
           }
         }
-
-        userBadge.daysLeft = userBadge.daysLeft - 1
+        console.log(userBadge.daysLeft)
         const obj = {
-          daysLeft: userBadge.daysLeft
+          daysLeft: userBadge.daysLeft - 1
         }
+        console.log(obj)
 
         if (userBadge.daysLeft === 0) { obj.inProgress = false }
         const resp = await UserBadge.update(obj, {
@@ -49,12 +49,32 @@ class PostsController {
             UserUserId: post.userId
           }
         })
-        post.postNumber = badge.days - userBadge.daysLeft
+        post.postNumber = badge.days - userBadge.daysLeft + 1
         const postCreated = await Post.create(post)
         return { postCreated: postCreated, resp: resp }
       }
       const postCreated = await Post.create(post)
       return { postCreated: postCreated }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async updatePosts (updation, userId, postId) {
+    try {
+      const post = await Post.findByPk(postId)
+      if (updation.upvotes) {
+        delete updation.upvotes
+      }
+      if (post) {
+        const update = await Post.update(updation, { where: { postId } })
+        return { update }
+      }
+      return { message: 'No such posts exist' }
     } catch (e) {
       logger.error(e)
       return {

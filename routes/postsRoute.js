@@ -63,8 +63,8 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   }
 })
 
-router.patch('/', [jwtAuth], async (req, res) => {
-  const response = await posts.updatePost(req.body, req.claims.userId)
+router.patch('/:postId', [jwtAuth], async (req, res) => {
+  const response = await posts.updatePost(req.body, req.claims.userId, req.params.postId)
   return res.status(response.isError ? 400 : 200).json({ response })
 })
 

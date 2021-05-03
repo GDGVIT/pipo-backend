@@ -3,7 +3,7 @@ const sequelize = require('../db/db')
 
 const schema = {
   badgeId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
-  badgeName: { type: DataTypes.STRING, allowNull: false },
+  badgeName: { type: DataTypes.STRING },
   badgeUrl: { type: DataTypes.STRING },
   hasStreak: { type: DataTypes.BOOLEAN },
   days: { type: DataTypes.INTEGER, allowNull: false },
