@@ -88,7 +88,7 @@ router.get('/allLatestPosts/:noOfUsers', async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/:badgeId/:noOfUsers', async (req, res) => {
+router.get('/postsByBadgeName/:badgeId/:noOfUsers', async (req, res) => {
   const response = await posts.getPostsByBadgeName(req.params.badgeId, req.params.noOfUsers)
   return res.status(response.isError ? 400 : 200).send(response)
 })
@@ -127,6 +127,16 @@ router.post('/removeUpvote', [jwtAuth], async (req, res) => {
 router.get('/getComments/:postId', [jwtAuth], async (req, res) => {
   const response = await posts.getComments(req.params.postId)
   return res.status(response.statusCode).send(response.response)
+})
+
+router.get('/of/:userId', async (req, res) => {
+  const response = await posts.getAllPostsOf(req.params.userId)
+  return res.status(response.statusCode).send(response)
+})
+
+router.get('/of/:userId/:number', async (req, res) => {
+  const response = await posts.getFewPostsOf(req.params.userId, req.params.number)
+  return res.status(response.statusCode).send(response)
 })
 
 module.exports = router
