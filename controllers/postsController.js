@@ -311,6 +311,37 @@ class PostsController {
       }
     }
   }
+
+  static async getAllPostsOf (userId) {
+    try {
+      const posts = await Post.findAll({ where: { userId: userId } })
+      return { posts, statusCode: 200 }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        statusCode: 400
+      }
+    }
+  }
+
+  static async getFewPostsOf (userId, number) {
+    try {
+      const posts = await Post.findAll({ where: { userId: userId } })
+      return {
+        posts: posts.slice(0, number),
+        statusCode: 200
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        statusCode: 400
+      }
+    }
+  }
 }
 
 module.exports = PostsController
