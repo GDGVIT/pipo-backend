@@ -53,7 +53,7 @@ router.post('/oAuth', async (req, res) => {
 //         return res.status(match ? 200 : 400).send({ user, token })
 //     } else {
 //         console.log(user)
-//         return res.status(401).send({ message: 'User not authorized', m: user.message })
+//         return res.status(400).send({ message: 'User not authorized', m: user.message })
 //     }
 // })
 

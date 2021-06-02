@@ -46,25 +46,54 @@ const uploads = multer({
 
 router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
-    await cloudinary.uploader.upload('./uploads/' +
-            req.claims.userId + req.file.originalname,
-    async function (error, result) {
-      if (error) {
-        return res.status(error.http_code).send(error.message)
-      }
-      req.body.image = [result.secure_url]
-      req.body.userId = req.claims.userId
-      const response = await posts.createPost(req.body)
-      fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
-      return res.status(response.isError ? 400 : 200).json({ response })
-    })
+    req.body.userId = req.claims.userId
+    if (req.file) {
+      await cloudinary.uploader.upload('./uploads/' +
+                req.claims.userId + req.file.originalname,
+      async function (error, result) {
+        if (error) {
+          return res.status(error.http_code).send(error.message)
+        }
+        req.body.image = [result.secure_url]
+        const response = await posts.createPost(req.body)
+        fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
+        return res.status(response.isError ? 400 : 200).json({ response })
+      })
+    }
+
+    const response = await posts.createPost(req.body)
+    return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
     return res.status(400).send({ message: 'File not provided' })
   }
 })
 
 router.patch('/:postId', [jwtAuth], async (req, res) => {
-  const response = await posts.updatePost(req.body, req.claims.userId, req.params.postId)
+  try {
+    console.log(req.file)
+    if (req.file) {
+      await cloudinary.uploader.upload('./uploads/' +
+                req.claims.userId + req.file.originalname,
+      async function (error, result) {
+        if (error) {
+          return res.status(error.http_code).send(error.message)
+        }
+        req.body.image = [result.secure_url]
+        const response = await posts.updatePosts(req.body)
+        fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
+        return res.status(response.isError ? 400 : 200).json({ response })
+      })
+    }
+    const response = await posts.updatePosts(req.body, req.params.postId)
+    fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
+    return res.status(response.isError ? 400 : 200).json({ response })
+  } catch (e) {
+    return res.status(400).send({ message: 'File not provided' })
+  }
+})
+
+router.delete('/:postId', [jwtAuth], async (req, res) => {
+  const response = await posts.deletePosts(req.params.postId)
   return res.status(response.isError ? 400 : 200).json({ response })
 })
 
@@ -98,7 +127,7 @@ router.get('/myLatestPost', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/postsOfAChallange', [jwtAuth], async (req, res) => {
+router.post('/postsOfAChallange', [jwtAuth], async (req, res) => {
   const response = await posts.getPostsOfAChallange(req.body.badgeName, req.claims.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })

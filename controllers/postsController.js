@@ -5,6 +5,8 @@ class PostsController {
   static async createPost (post) {
     try {
       post.postNumber = 0
+      console.log(post)
+      post.tags = post.tags.split(',')
       if (post.badgeName) {
         const badge = await Badge.findOne({ where: { badgeName: post.badgeName } })
         if (!badge) {
@@ -14,19 +16,15 @@ class PostsController {
           }
         }
         let userBadge = await UserBadge.findOne({ where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId } })
-        console.log(userBadge)
         if (!userBadge) {
-          console.log(badge.days)
           const userBadgeContent = {
             BadgeBadgeId: badge.badgeId,
             UserUserId: post.userId,
             daysLeft: badge.days - 1,
             inProgress: true
           }
-          console.log(userBadgeContent.daysLeft)
           userBadge = await UserBadge.create(userBadgeContent)
           post.postNumber = badge.days - userBadge.daysLeft
-          console.log(post.postNumber, badge.days, userBadge.daysLeft)
           const postCreated = await Post.create(post)
           return { postCreated: postCreated }
         }
@@ -36,12 +34,9 @@ class PostsController {
             message: 'This challenge has been completed by you'
           }
         }
-        console.log(userBadge.daysLeft)
         const obj = {
           daysLeft: userBadge.daysLeft - 1
         }
-        console.log(obj)
-
         if (userBadge.daysLeft === 0) { obj.inProgress = false }
         const resp = await UserBadge.update(obj, {
           where: {
@@ -64,7 +59,7 @@ class PostsController {
     }
   }
 
-  static async updatePosts (updation, userId, postId) {
+  static async updatePosts (updation, postId) {
     try {
       const post = await Post.findByPk(postId)
       if (updation.upvotes) {
@@ -73,6 +68,23 @@ class PostsController {
       if (post) {
         const update = await Post.update(updation, { where: { postId } })
         return { update }
+      }
+      return { message: 'No such posts exist' }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async deletePosts (postId) {
+    try {
+      const post = await Post.findByPk(postId)
+      if (post) {
+        const deleted = await Post.destroy({ where: { postId } })
+        return { deleted }
       }
       return { message: 'No such posts exist' }
     } catch (e) {
@@ -177,7 +189,7 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      const posts = await Promise.all(users.map(async (user) => {
+      let posts = await Promise.all(users.map(async (user) => {
         const post = await Post.findAll({
           where: { userId: user.userId, badgeName: badge.badgeName }
         })
@@ -189,6 +201,9 @@ class PostsController {
         return last
       }))
       const num = parseInt(noOfUsers)
+      posts = posts.filter(post => {
+        return post != null
+      })
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
