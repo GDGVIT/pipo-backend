@@ -168,4 +168,9 @@ router.get('/of/:userId/:number', async (req, res) => {
   return res.status(response.statusCode).send(response)
 })
 
+router.get('/filter/:badgeId/:userId', async (req, res) => {
+  const response = await posts.filterPostsForBadge(req.params.badgeId, req.params.userId)
+  return res.status(response.statusCode).send(response)
+})
+
 module.exports = router
