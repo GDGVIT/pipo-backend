@@ -289,17 +289,20 @@ class PostsController {
   static async removeUpvote (postId, userId) {
     try {
       let post = await Post.findByPk(postId)
-      if (!post.upvoted) {
-        post.upvoted = []
+      if (post) {
+        if (!post.upvotes) {
+          post.upvotes = []
+        }
+        if (post.upvotes.includes(userId)) {
+          const arr = {}
+          arr.upvotes = post.upvotes
+          arr.upvotes.pop(userId)
+          post = await Post.update(arr, { where: { postId } })
+          return { message: 'Vote removed', statusCode: 200 }
+        }
+        return { message: 'upvote before you remove the vote', statusCode: 409 }
       }
-      if (post.upvoted.includes(userId)) {
-        const arr = {}
-        arr.upvoted = post.upvoted
-        arr.upvoted.pop(userId)
-        post = await Post.update(arr, { where: { postId } })
-        return { message: 'Vote removed', statusCode: 200 }
-      }
-      return { message: 'upvote before you remove the vote', statusCode: 409 }
+      return { message: "Posts doesn't exist", statusCode: 404 }
     } catch (e) {
       logger.error(e)
       return {
