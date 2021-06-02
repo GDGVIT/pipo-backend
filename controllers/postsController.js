@@ -357,6 +357,21 @@ class PostsController {
       }
     }
   }
+
+  static async filterPostsForBadge (badgeId, userId) {
+    try {
+      const badge = await Badge.findByPk(badgeId)
+      const response = await Post.findAll({ where: { badgeName: badge.badgeName, userId }, raw: true })
+      return { response, statusCode: 200 }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        statusCode: 400
+      }
+    }
+  }
 }
 
 module.exports = PostsController
