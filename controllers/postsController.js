@@ -264,16 +264,17 @@ class PostsController {
 
   static async upvote (postId, userId) {
     try {
-      let post = await Post.findByPk(postId)
-      if (!post.upvoted) {
-        post.upvoted = []
+      let post = await Post.findOne({ where: { postId }, raw: true })
+      console.log(post)
+      if (!post.upvotes) {
+        post.upvotes = []
       }
-      if (post.upvoted.includes(userId)) {
+      if (post.upvotes.includes(userId)) {
         return { message: 'Already upvoted', statusCode: 409 }
       }
       const arr = {}
-      arr.upvoted = post.upvoted
-      arr.upvoted.push(userId)
+      arr.upvotes = post.upvotes
+      arr.upvotes.push(userId)
       post = await Post.update(arr, { where: { postId } })
       return { post, statusCode: 200 }
     } catch (e) {
