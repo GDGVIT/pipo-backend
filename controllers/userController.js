@@ -28,12 +28,14 @@ class UserController {
           status: 200
         }
       }
+
       const auth = {
         email,
         name,
         picture,
         points: 20,
-        isAdmin: false
+        isAdmin: false,
+        userName: name
       }
       const createdUser = await User.create(auth)
       console.log(createdUser)

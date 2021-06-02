@@ -26,4 +26,10 @@ router.get('/inProgress', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.get('/completed', [jwtAuth], async (req, res) => {
+  console.log(req.claims.userId)
+  const response = await badge.getCompletedBadge(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 module.exports = router
