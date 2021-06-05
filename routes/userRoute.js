@@ -77,4 +77,9 @@ router.get('/getUser', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.get('/:userId', async (req, res) => {
+  const response = await userController.getUserUserId(req.params.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 module.exports = router

@@ -101,6 +101,24 @@ class UserController {
     }
   }
 
+  static async getUserUserId (userId) {
+    try {
+      const user = await User.findByPk(userId)
+      user.todo = []
+      if (user) {
+        return user
+      }
+      return { message: "User doesn't exist", isError: true }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        status: 400
+      }
+    }
+  }
+
   static async getAuthByEmail (auth) {
     try {
       const user = await User.findOne({ where: { email: auth.email, isAdmin: auth.isAdmin } })

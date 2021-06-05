@@ -127,7 +127,7 @@ router.get('/myLatestPost', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.post('/postsOfAChallange', [jwtAuth], async (req, res) => {
+router.post('/postsOfAChallenge', [jwtAuth], async (req, res) => {
   const response = await posts.getPostsOfAChallange(req.body.badgeName, req.claims.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
