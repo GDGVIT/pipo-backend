@@ -33,4 +33,9 @@ router.delete('/stopFollower/:which', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.delete('/stopFriend/:which', [jwtAuth], async (req, res) => {
+  const response = await follow.stopFriend(req.claims.userId, req.params.which)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 module.exports = router
