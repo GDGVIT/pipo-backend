@@ -13,13 +13,18 @@ router.post('/makeFriend/:makeFriendId', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/followers', [jwtAuth], async (req, res) => {
-  const response = await follow.getAllFollowers(req.claims.userId)
+router.get('/followers/:userId', async (req, res) => {
+  const response = await follow.getAllFollowers(req.params.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/following', [jwtAuth], async (req, res) => {
-  const response = await follow.getAllFollowing(req.claims.userId)
+router.get('/following/:userId', async (req, res) => {
+  const response = await follow.getAllFollowing(req.params.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/friend/:userId', async (req, res) => {
+  const response = await follow.getAllFriends(req.params.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
