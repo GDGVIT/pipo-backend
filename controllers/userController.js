@@ -1,4 +1,4 @@
-const { User } = require('../models/relations')
+const { User, Follow } = require('../models/relations')
 
 const admin = require('firebase-admin')
 const logger = require('../logging/logger')
@@ -104,9 +104,15 @@ class UserController {
   static async getUserUserId (userId) {
     try {
       const user = await User.findByPk(userId)
-      user.todo = []
+
       if (user) {
-        return user
+        user.todo = []
+
+        const friends = await Follow.findAll({ where: { isFriend: true, followerId: userId }, raw: true })
+        const followers = await Follow.findAll({ where: { followingId: userId }, raw: true })
+        const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+
+        return { user, friends: friends.length, followers: followers.length, following: following.length }
       }
       return { message: "User doesn't exist", isError: true }
     } catch (e) {
