@@ -44,23 +44,40 @@ const uploads = multer({
   fileFilter: fileFilter
 })
 
-router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
+router.post('/', [jwtAuth], uploads.array('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
-    if (req.file) {
-      await cloudinary.uploader.upload('./uploads/' +
-                req.claims.userId + req.file.originalname,
-      async function (error, result) {
-        if (error) {
-          return res.status(error.http_code).send(error.message)
-        }
-        req.body.image = [result.secure_url]
-        const response = await posts.createPost(req.body)
-        fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
-        return res.status(response.isError ? 400 : 200).json({ response })
-      })
+    console.log(req.files)
+    req.body.image = []
+    if (req.files) {
+      await Promise.all(req.files.map(async (file) => {
+        await cloudinary.uploader.upload('./uploads/' +
+                    req.claims.userId + file.originalname,
+        async function (error, result) {
+          if (error) {
+            return res.status(error.http_code).send(error.message)
+          }
+          req.body.image.push(result.secure_url)
+          fs.unlinkSync('./uploads/' + req.claims.userId + file.originalname)
+        })
+      }))
+      const response = await posts.createPost(req.body)
+      return res.status(response.isError ? 400 : 200).json({ response })
     }
-
+    // if (req.file) {
+    //     console.log(req.file)
+    //     await cloudinary.uploader.upload('./uploads/' +
+    //         req.claims.userId + req.file.originalname,
+    //         async function(error, result) {
+    //             if (error) {
+    //                 return res.status(error.http_code).send(error.message)
+    //             }
+    //             req.body.image = [result.secure_url]
+    //             const response = await posts.createPost(req.body)
+    //             fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
+    //             return res.status(response.isError ? 400 : 200).json({ response })
+    //         })
+    // }
     const response = await posts.createPost(req.body)
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
