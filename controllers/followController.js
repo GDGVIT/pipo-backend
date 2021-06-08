@@ -50,6 +50,10 @@ class FollowController {
         }
       })
 
+      if (getFollow1.isFriend) {
+        return { message: 'You are already friends' }
+      }
+
       let follow,
         friend1Created,
         friend2Created
