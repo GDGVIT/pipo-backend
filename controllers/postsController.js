@@ -5,7 +5,8 @@ class PostsController {
   static async createPost (post) {
     try {
       post.postNumber = 0
-      post.tags = post.tags.split(',')
+
+      if (post.tags) { post.tags = post.tags.split(',') }
       if (post.badgeName) {
         // Handle if badge not found
 
@@ -148,13 +149,18 @@ class PostsController {
   static async updatePosts (updation, postId) {
     try {
       const post = await Post.findByPk(postId)
+
+      if (updation.tags) { updation.tags = updation.tags.split(',') }
+
       if (updation.upvotes) {
         delete updation.upvotes
       }
+
       if (post) {
         const update = await Post.update(updation, { where: { postId } })
         return { update }
       }
+
       return { message: 'No such posts exist' }
     } catch (e) {
       logger.error(e)
@@ -335,6 +341,12 @@ class PostsController {
     try {
       const post = await Post.findByPk(postId)
       const comments = await Comment.findAll({ where: { postId } })
+      if (!post) {
+        return {
+          message: "Post doesn't exist",
+          isError: true
+        }
+      }
       return {
         post,
         comments
@@ -352,6 +364,12 @@ class PostsController {
     try {
       let post = await Post.findOne({ where: { postId }, raw: true })
       console.log(post)
+      if (!post) {
+        return {
+          isError: true,
+          message: 'No such post exists'
+        }
+      }
       if (!post.upvotes) {
         post.upvotes = []
       }
@@ -361,6 +379,11 @@ class PostsController {
       const arr = {}
       arr.upvotes = post.upvotes
       arr.upvotes.push(userId)
+
+      let user = await User.findOne({ where: { userId: post.userId }, raw: true })
+      user.points += 1
+      console.log(user)
+      user = await User.update(user, { where: { userId: post.userId } })
       post = await Post.update(arr, { where: { postId } })
       return { post, statusCode: 200 }
     } catch (e) {
@@ -383,6 +406,12 @@ class PostsController {
           const arr = {}
           arr.upvotes = post.upvotes
           arr.upvotes.pop(userId)
+
+          let user = await User.findOne({ where: { userId: post.userId }, raw: true })
+          user.points -= 1
+          console.log(user)
+          user = await User.update(user, { where: { userId: post.userId } })
+
           post = await Post.update(arr, { where: { postId } })
           return { message: 'Vote removed', statusCode: 200 }
         }
