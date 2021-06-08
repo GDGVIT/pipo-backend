@@ -36,6 +36,17 @@ class PostsController {
           }
           userBadge = await UserBadge.create(userBadgeContent)
           post.postNumber = badge.days - userBadge.daysLeft
+
+          if (!userBadge.daysLeft) {
+            userBadge.inProgress = false
+            userBadge = await UserBadge.update(userBadge, {
+              where: {
+                BadgeBadgeId: badge.badgeId,
+                UserUserId: post.userId
+              }
+            })
+          }
+
           const postCreated = await Post.create(post)
           return { postCreated: postCreated }
         }
