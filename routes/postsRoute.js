@@ -143,7 +143,7 @@ router.get('/postsByBadgeName/:badgeId/:noOfUsers', async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/myLatestPost', [jwtAuth], async (req, res) => {
+router.get('/mypost/myLatestPost', [jwtAuth], async (req, res) => {
   const response = await posts.getMyLatestPost(req.claims.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
