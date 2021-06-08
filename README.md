@@ -14,6 +14,8 @@
 
 ## Functionalities and routes
 
+Ver 1:
+
 - [x]  Auth route (name, email)
     - [x]  Post(signup)
     - [x]  Post(login)
@@ -36,6 +38,8 @@
     - [x]  Post request
 
 ---
+
+Ver 2:
 
 - [ ]  Route for checking time
 - [ ]  Challenge
