@@ -34,7 +34,7 @@ class UserController {
         name,
         picture,
         points: 20,
-        isAdmin: false,
+        isAdmin: true,
         userName: name
       }
       const createdUser = await User.create(auth)
