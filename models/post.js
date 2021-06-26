@@ -3,7 +3,7 @@ const sequelize = require('../db/db')
 
 const schema = {
   postId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
-  title: { type: DataTypes.STRING },
+  title: { type: DataTypes.STRING, allowNull: false },
   image: {
     type: DataTypes.ARRAY(DataTypes.STRING)
   },
