@@ -10,6 +10,9 @@ admin.initializeApp({
   databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
+let i = 0
+const USERNAME_LENGTH_LIMIT = 10
+
 class UserController {
   static async createUser (idToken) {
     try {
@@ -29,16 +32,21 @@ class UserController {
         }
       }
 
+      i++
+      const userName = 'anon' + i
+
       const auth = {
         email,
         name,
         picture,
         points: 20,
         isAdmin: true,
-        userName: name
+        userName
       }
+
       const createdUser = await User.create(auth)
       console.log(createdUser)
+
       return {
         message: 'User created',
         userInfo,
@@ -86,7 +94,8 @@ class UserController {
 
   static async getUser (userId) {
     try {
-      const user = await User.findByPk(userId)
+      const user = await User.findOne({ where: { userId }, raw: true })
+      console.log(user)
       if (user) {
         return user
       }
@@ -146,8 +155,38 @@ class UserController {
     }
   }
 
+  static checkUserName (username) {
+    const re = new RegExp(`^[a-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
+    return re.test(username)
+  };
+
   static async update (user, userId) {
     try {
+      if (user.userName === '') {
+        return {
+          message: "Username can't be empty",
+          isError: true
+        }
+      }
+
+      if (user.userName) {
+        const finding = await User.findOne({ where: { userName: user.userName } })
+        if (finding && (finding.userId !== userId)) {
+          return {
+            message: 'User with that userName already exists. Please choose a different userName',
+            isError: true
+          }
+        }
+        if (!this.checkUserName(user.userName)) {
+          return {
+            message: `userName provided doesn't meet the restriction set: 
+                        characters allowed = [a-z0-9_@./#&+-]
+                        {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`,
+            isError: true
+          }
+        }
+      }
+
       const resp = await User.update(user, {
         where: {
           userId

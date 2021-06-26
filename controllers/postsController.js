@@ -27,6 +27,9 @@ class PostsController {
         // Check if user has already started with the badge
 
         let userBadge = await UserBadge.findOne({ where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId } })
+
+        // First post
+
         if (!userBadge) {
           const userBadgeContent = {
             BadgeBadgeId: badge.badgeId,
@@ -51,14 +54,18 @@ class PostsController {
           return { postCreated: postCreated }
         }
 
+        let isComplete = false
+
         // Check if a user is posting on a completed challenge
 
         if (userBadge.daysLeft === 0) {
           post.postNumber = null
           const postCreated = await Post.create(post)
+          isComplete = true
           return {
             message: 'This challenge has been completed by you',
-            postCreated
+            postCreated,
+            isComplete
           }
         }
 
@@ -74,7 +81,7 @@ class PostsController {
         if (!(date - postnCreated)) {
           post.postNumber = null
           const postNewCreated = await Post.create(post)
-          return { message: 'You already posted for today, created this as a new post in the badge', postNewCreated }
+          return { message: 'You already posted for today, created this as a new post in the badge', postCreated: postNewCreated }
         }
 
         // Let user start the badge afresh if his streak is broken
@@ -114,23 +121,23 @@ class PostsController {
           })
           post.postNumber = badge.days - updateUserBadge.daysLeft
           const postNewCreated = await Post.create(post)
-          return { message: 'You had broken the streak, so starting a new streak', postNewCreated }
+          return { message: 'You had broken the streak, so starting a new streak', postCreated: postNewCreated }
         }
 
-        // create new post under badge and check it it is last post, or if challenge is completed
+        // create new post under badge and check if it is last post, or if challenge is completed
 
         const obj = {
           daysLeft: userBadge.daysLeft - 1
         }
 
         let message = `${obj.daysLeft} day(s) is/are left for your challenge`
-        let isComplete = false
 
         if (obj.daysLeft === 0) {
           obj.inProgress = false
           message = 'Congratulations!! You completed the challenge'
           isComplete = true
         }
+        console.log(obj)
 
         const resp = await UserBadge.update(obj, {
           where: {

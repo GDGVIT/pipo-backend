@@ -25,6 +25,8 @@
         "pg-hstore": "^2.3.3",
         "sequelize": "^6.5.0",
         "socket.io": "^4.0.1",
+        "unique-username-generator": "^1.0.1",
+        "uniquechars": "^1.1.5",
         "uuid4": "^2.0.2",
         "winston": "^3.3.3"
     },
