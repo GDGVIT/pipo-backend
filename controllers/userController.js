@@ -61,7 +61,7 @@ class UserController {
 
       return {
         message: 'User created',
-        createdUser,
+        user: createdUser,
         status: 201
       }
     } catch (e) {

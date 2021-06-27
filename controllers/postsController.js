@@ -327,8 +327,14 @@ class PostsController {
   static async getMyLatestPost (userId) {
     try {
       const post = await Post.findAll({
-        where: { userId: userId }
+        where: { userId: userId },
+        raw: true
       })
+      if (post.length === 0) {
+        return {
+          message: 'No latest post yet.'
+        }
+      }
       const last = post[post.length - 1]
       return last
     } catch (e) {
