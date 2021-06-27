@@ -332,7 +332,10 @@ class PostsController {
       })
       if (post.length === 0) {
         return {
-          message: 'No latest post yet.'
+          message: 'No latest post yet.',
+          title: 'Start your journey today!',
+          description: 'No Latest Post yet! Well, this is the beginning of your journey why not add some posts and see what others think about it 🤔. Pick out any challenge you like and work on it🔥. Lost? You can always check out the details by clicking on the logo on top 😊',
+          image: ['https://i.imgur.com/HuNalGN.png']
         }
       }
       const last = post[post.length - 1]
