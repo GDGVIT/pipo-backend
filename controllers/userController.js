@@ -110,7 +110,7 @@ class UserController {
     }
   }
 
-  static async getUserUserId (userId) {
+  static async getUserUserId (userId, myUserId) {
     try {
       const user = await User.findByPk(userId)
 
@@ -121,7 +121,19 @@ class UserController {
         const followers = await Follow.findAll({ where: { followingId: userId }, raw: true })
         const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
 
-        return { user, friends: friends.length, followers: followers.length, following: following.length }
+        let amIFollowing = await Follow.findAll({ where: { followerId: myUserId, followingId: userId }, raw: true })
+
+        if (amIFollowing.length === 0) {
+          amIFollowing = false
+        } else amIFollowing = true
+
+        return {
+          user,
+          friends: friends.length,
+          followers: followers.length,
+          following: following.length,
+          amIFollowing
+        }
       }
       return { message: "User doesn't exist", isError: true }
     } catch (e) {
