@@ -14,7 +14,7 @@ router.post('/oAuth', async (req, res) => {
     return res.status(user.status).send(user)
   }
   if (!user.isError) {
-    const token = jwt.sign(JSON.stringify(user.createdUser), process.env.JWT_PASS)
+    const token = jwt.sign(JSON.stringify(user.user), process.env.JWT_PASS)
     user.token = token
   }
   return res.status(user.status).send(user)

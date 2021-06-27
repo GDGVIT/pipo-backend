@@ -12,7 +12,7 @@ admin.initializeApp({
 
 const USERNAME_LENGTH_LIMIT = 10
 
-const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator')
+const { uniqueNamesGenerator, animals, starWars } = require('unique-names-generator')
 
 class UserController {
   static async createUser (idToken) {
@@ -37,10 +37,11 @@ class UserController {
 
       while (true) {
         userName = uniqueNamesGenerator({
-          dictionaries: [adjectives, animals],
+          dictionaries: [animals, starWars],
           length: 1
         })
         const user1 = await User.findOne({ where: { userName }, raw: true })
+        console.log(user1)
         if (!user1) {
           userName = userName.substr(0, 10)
           break
