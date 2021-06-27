@@ -158,7 +158,7 @@ router.get('/', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.get('/allLatestPosts', async (req, res) => {
+router.get('/allLatestPosts/all', async (req, res) => {
   const response = await posts.getAllUsersLatestPosts()
   return res.status(response.isError ? 400 : 200).send(response)
 })
