@@ -10,8 +10,9 @@ admin.initializeApp({
   databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
-let i = 0
 const USERNAME_LENGTH_LIMIT = 10
+
+const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator')
 
 class UserController {
   static async createUser (idToken) {
@@ -32,8 +33,19 @@ class UserController {
         }
       }
 
-      i++
-      const userName = 'anon' + i
+      let userName
+
+      while (true) {
+        userName = uniqueNamesGenerator({
+          dictionaries: [adjectives, animals],
+          length: 1
+        })
+        const user1 = await User.findOne({ where: { userName }, raw: true })
+        if (!user1) {
+          userName = userName.substr(0, 10)
+          break
+        }
+      }
 
       const auth = {
         email,
@@ -49,7 +61,6 @@ class UserController {
 
       return {
         message: 'User created',
-        userInfo,
         createdUser,
         status: 201
       }
