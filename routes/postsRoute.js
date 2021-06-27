@@ -101,23 +101,22 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   }
 })
 
-router.patch('/:postId', [jwtAuth], uploads.array('post'), uploads.single('post'), async (req, res) => {
+router.patch('/:postId', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
-    if (req.files) {
-      req.body.image = []
-      await Promise.all(req.files.map(async (file) => {
-        await cloudinary.uploader.upload('./uploads/' +
-                    req.claims.userId + file.originalname,
-        async function (error, result) {
-          if (error) {
-            return res.status(error.http_code).send(error.message)
-          }
-          req.body.image.push(result.secure_url)
-          fs.unlinkSync('./uploads/' + req.claims.userId + file.originalname)
-        })
-      }))
-    }
-
+    // if (req.files) {
+    //     req.body.image = []
+    //     await Promise.all(req.files.map(async(file) => {
+    //         await cloudinary.uploader.upload('./uploads/' +
+    //             req.claims.userId + file.originalname,
+    //             async function(error, result) {
+    //                 if (error) {
+    //                     return res.status(error.http_code).send(error.message)
+    //                 }
+    //                 req.body.image.push(result.secure_url)
+    //                 fs.unlinkSync('./uploads/' + req.claims.userId + file.originalname)
+    //             })
+    //     }))
+    // }
     if (req.file) {
       req.body.image = []
       await cloudinary.uploader.upload('./uploads/' +
@@ -130,7 +129,7 @@ router.patch('/:postId', [jwtAuth], uploads.array('post'), uploads.single('post'
         fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
       })
     }
-
+    console.log(req.body)
     const response = await posts.updatePosts(req.body, req.params.postId)
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
