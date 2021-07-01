@@ -456,10 +456,13 @@ class PostsController {
 
   static async getComments (postId) {
     try {
-      let comments = await Comment.findAll({ where: { postId: postId } })
+      let comments = await Comment.findAll({ where: { postId: postId }, raw: true })
       let user
       comments = await Promise.all(comments.map(async (comment) => {
-        user = await User.findOne({ userName: comment.userName })
+        user = await User.findOne({
+          where: { userName: comment.userName },
+          raw: true
+        })
         comment.picture = user.picture
         return comment
       }))
