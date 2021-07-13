@@ -44,6 +44,8 @@ const uploads = multer({
   fileFilter: fileFilter
 })
 
+// CRUD
+
 router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
@@ -137,18 +139,13 @@ router.patch('/:postId', [jwtAuth], uploads.single('post'), async (req, res) => 
   }
 })
 
-router.get('/:postId', [jwtAuth], async (req, res) => {
+router.get('/:postId', async (req, res) => {
   const response = await posts.getPost(req.params.postId)
   return res.status(response.isError ? 400 : 200).json({ response })
 })
 
 router.delete('/:postId', [jwtAuth], async (req, res) => {
-  const response = await posts.deletePosts(req.params.postId)
-  return res.status(response.isError ? 400 : 200).json({ response })
-})
-
-router.post('/comments/', [jwtAuth], async (req, res) => {
-  const response = await posts.createComment(req.body, req.claims.userId)
+  const response = await posts.deletePosts(req.params.postId, req.claims.userId)
   return res.status(response.isError ? 400 : 200).json({ response })
 })
 
@@ -156,6 +153,15 @@ router.get('/', [jwtAuth], async (req, res) => {
   const response = await posts.getAllPosts(req.claims.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
+
+// Comments
+
+router.post('/comments/', [jwtAuth], async (req, res) => {
+  const response = await posts.createComment(req.body, req.claims.userId)
+  return res.status(response.isError ? 400 : 200).json({ response })
+})
+
+// All posts - common for all users
 
 router.get('/allLatestPosts/all', async (req, res) => {
   const response = await posts.getAllUsersLatestPosts()
@@ -168,9 +174,11 @@ router.get('/allLatestPosts/:noOfUsers', async (req, res) => {
 })
 
 router.get('/postsByBadgeName/:badgeId/:noOfUsers', async (req, res) => {
-  const response = await posts.getPostsByBadgeName(req.params.badgeId, req.params.noOfUsers)
+  const response = await posts.getPostsByBadge(req.params.badgeId, req.params.noOfUsers)
   return res.status(response.isError ? 400 : 200).send(response)
 })
+
+// Posts - my posts
 
 router.get('/mypost/myLatestPost', [jwtAuth], async (req, res) => {
   const response = await posts.getMyLatestPost(req.claims.userId)
@@ -182,10 +190,7 @@ router.post('/postsOfAChallenge', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
-router.post('/getPost/:postId', [jwtAuth], async (req, res) => {
-  const response = await posts.getPost(req.params.postId)
-  return res.status(response.isError ? 400 : 200).send(response)
-})
+// Upvoting
 
 router.post('/upvote', [jwtAuth], async (req, res) => {
   const response = await posts.upvote(req.body.postId, req.claims.userId)
@@ -203,10 +208,14 @@ router.post('/removeUpvote', [jwtAuth], async (req, res) => {
   return res.status(response.statusCode).send(response)
 })
 
-router.get('/getComments/:postId', [jwtAuth], async (req, res) => {
+// Comments
+
+router.get('/getComments/:postId', async (req, res) => {
   const response = await posts.getComments(req.params.postId)
-  return res.status(response.statusCode).send(response.response)
+  return res.status(200).send(response)
 })
+
+// All users can view these posts
 
 router.get('/of/:userId', async (req, res) => {
   const response = await posts.getAllPostsOf(req.params.userId)

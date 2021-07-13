@@ -4,24 +4,22 @@ const logger = require('../logging/logger')
 class TagsController {
   static async createTag (tag, email) {
     try {
-      const tagsFound = await User.findAll({ where: { email: email } })
-      if (tagsFound[0].tag == null) {
-        const arr = []
-        arr.push(tag)
-        tagsFound[0].tags = arr
+      const tagsFound = await User.findAll({ where: { email: email }, raw: true })
+      tag = tag.split(',')
+      tag.filter(function (e) { return true })
+      if (tagsFound[0].tags == null) {
         const val = {}
-        val.tags = tagsFound[0].tags
+        val.tags = tag
         const updatedUser = await User.update(val, { where: { email: email } })
         return {
           message: 'Added first tag',
           updatedUser
         }
       }
-      const arr = tagsFound[0].tags
-      arr.push(tag)
-      tagsFound[0].tags = arr
+      let arr = tagsFound[0].tags
+      arr = arr.concat(tag)
       const val = {}
-      val.tags = tagsFound[0].tags
+      val.tags = arr
       const updatedUser = await User.update(val, { where: { email: email } })
       return { message: 'Added tag', updatedUser }
     } catch (e) {
