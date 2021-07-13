@@ -190,6 +190,16 @@ router.post('/postsOfAChallenge', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.get('/get/followerLatestPosts/', [jwtAuth], async (req, res) => {
+  const response = await posts.getFollowerLatestPosts(req.claims.userId)
+  return res.status(response.statusCode).send(response)
+})
+
+router.get('/get/followerPosts/', [jwtAuth], async (req, res) => {
+  const response = await posts.getFollowerPosts(req.claims.userId)
+  return res.status(response.statusCode).send(response)
+})
+
 // Upvoting
 
 router.post('/upvote', [jwtAuth], async (req, res) => {
