@@ -7,7 +7,6 @@ const schema = {
   userName: { type: DataTypes.STRING },
   email: { type: DataTypes.STRING, allowNull: false },
   points: { type: DataTypes.INTEGER, allowNull: false, default: 20 },
-  // password: { type: DataTypes.STRING },
   isAdmin: { type: DataTypes.BOOLEAN, allowNull: false, default: false },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING) },
   todo: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },

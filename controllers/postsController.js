@@ -137,7 +137,6 @@ class PostsController {
           message = 'Congratulations!! You completed the challenge'
           isComplete = true
         }
-        console.log(obj)
 
         const resp = await UserBadge.update(obj, {
           where: {
@@ -145,7 +144,6 @@ class PostsController {
             UserUserId: post.userId
           }
         })
-        console.log(obj.daysLeft)
         post.postNumber = badge.days - userBadge.daysLeft + 1
         const postCreated = await Post.create(post)
         return { postCreated: postCreated, resp: resp, message, isComplete }
@@ -263,7 +261,6 @@ class PostsController {
         if (last) {
           last.setDataValue('points', user.points)
           last.setDataValue('username', user.userName)
-          console.log(last)
         }
         return last
       }))
@@ -403,7 +400,6 @@ class PostsController {
   static async upvote (postId, userId) {
     try {
       let post = await Post.findOne({ where: { postId }, raw: true })
-      console.log(post)
       if (!post) {
         return {
           isError: true,
@@ -422,7 +418,6 @@ class PostsController {
 
       let user = await User.findOne({ where: { userId: post.userId }, raw: true })
       user.points += 1
-      console.log(user)
       user = await User.update(user, { where: { userId: post.userId } })
       post = await Post.update(arr, { where: { postId } })
       return { post, statusCode: 200 }
@@ -449,7 +444,6 @@ class PostsController {
 
           let user = await User.findOne({ where: { userId: post.userId }, raw: true })
           user.points -= 1
-          console.log(user)
           user = await User.update(user, { where: { userId: post.userId } })
 
           post = await Post.update(arr, { where: { postId } })

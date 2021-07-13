@@ -10,7 +10,6 @@ const schema = {
   description: { type: DataTypes.STRING(2000) },
   badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER },
-  // brokeStreak: { type: DataTypes.BOOLEAN, default: false },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING), default: [] },
   upvotes: { type: DataTypes.ARRAY(DataTypes.UUID), default: [] }
 }
