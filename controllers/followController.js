@@ -127,7 +127,6 @@ class FollowController {
 
   static async getAllFollowing (userId) {
     try {
-      console.log(userId)
       const following = await Follow.findAll({ where: { followerId: userId } })
       return following
     } catch (e) {

@@ -8,7 +8,6 @@ const schema = {
   hasChallenge: { type: DataTypes.BOOLEAN, allowNull: false },
   days: { type: DataTypes.INTEGER, allowNull: false },
   upvotes: { type: DataTypes.INTEGER, allowNull: false, default: 0 }
-  // upvotes: { type: DataTypes.ARRAY(DataTypes.UUID), default: [] }
 }
 
 const options = {

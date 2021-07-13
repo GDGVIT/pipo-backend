@@ -41,7 +41,6 @@ class UserController {
           length: 1
         })
         const user1 = await User.findOne({ where: { userName }, raw: true })
-        console.log(user1)
         if (!user1) {
           userName = userName.substr(0, 10)
           break
@@ -58,7 +57,6 @@ class UserController {
       }
 
       const createdUser = await User.create(auth)
-      console.log(createdUser)
 
       return {
         message: 'User created',
@@ -107,7 +105,6 @@ class UserController {
   static async getUser (userId) {
     try {
       const user = await User.findOne({ where: { userId }, raw: true })
-      console.log(user)
       if (user) {
         return user
       }
@@ -161,7 +158,6 @@ class UserController {
   static async getAuthByEmail (auth) {
     try {
       const user = await User.findOne({ where: { email: auth.email, isAdmin: auth.isAdmin } })
-      console.log(user)
       user.password = ''
       if (!user) {
         return {
