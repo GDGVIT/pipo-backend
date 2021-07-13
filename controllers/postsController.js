@@ -1,4 +1,4 @@
-const { Post, Badge, UserBadge, User, Comment } = require('../models/relations')
+const { Post, Badge, UserBadge, User, Comment, Follow } = require('../models/relations')
 const logger = require('../logging/logger')
 
 class PostsController {
@@ -525,6 +525,48 @@ class PostsController {
       const badge = await Badge.findByPk(badgeId)
       const response = await Post.findAll({ where: { badgeName: badge.badgeName, userId }, raw: true })
       return { response, statusCode: 200 }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        statusCode: 400
+      }
+    }
+  }
+
+  static async getFollowerLatestPosts (userId) {
+    try {
+      const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+
+      const posts = await Promise.all(following.map(async (f) => {
+        const post = await Post.findAll({ where: { userId: f.followingId } })
+        const user = await User.findOne({ where: { userId: f.followingId } })
+        return { user, postList: post[0] }
+      }))
+
+      return { posts, statusCode: 200 }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        statusCode: 400
+      }
+    }
+  }
+
+  static async getFollowerPosts (userId) {
+    try {
+      const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+
+      const posts = await Promise.all(following.map(async (f) => {
+        const postList = await Post.findAll({ where: { userId: f.followingId } })
+        const user = await User.findOne({ where: { userId: f.followingId } })
+        return { user, postList }
+      }))
+
+      return { posts, statusCode: 200 }
     } catch (e) {
       logger.error(e)
       return {
