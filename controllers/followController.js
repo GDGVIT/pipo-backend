@@ -37,12 +37,19 @@ class FollowController {
       if (userId === makeFriendId) {
         return { message: "You can't make yourself a friend", isError: true }
       }
+
+      let follow,
+        friend1Created,
+        friend2Created
+
       const getFollow1 = await Follow.findOne({
         where: {
           followerId: userId,
           followingId: makeFriendId
-        }
+        },
+        raw: true
       })
+
       const getFollow2 = await Follow.findOne({
         where: {
           followerId: makeFriendId,
@@ -50,13 +57,13 @@ class FollowController {
         }
       })
 
-      if (getFollow1.isFriend) {
-        return { message: 'You are already friends' }
+      if (getFollow1) {
+        if (getFollow1.isFriend) {
+          return {
+            message: 'You are already friends'
+          }
+        }
       }
-
-      let follow,
-        friend1Created,
-        friend2Created
 
       if (!getFollow1) {
         follow = {
@@ -94,6 +101,7 @@ class FollowController {
           }
         })
       }
+
       return { friend1Created, friend2Created }
     } catch (e) {
       logger.error(e)

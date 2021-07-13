@@ -5,6 +5,14 @@ class BadgeController {
   static async createBadge (badge) {
     try {
       if (badge.upvotes > 20) {
+        const badgeFound = await Badge.findOne({ where: { badgeName: badge.badgeName } })
+        if (badgeFound) {
+          return {
+            message: 'Badge with this name already exists',
+            isError: true
+          }
+        }
+
         const createdBadge = await Badge.create(badge)
 
         return {
@@ -27,6 +35,14 @@ class BadgeController {
   static async getBadge (badgeId) {
     try {
       const badge = await Badge.findByPk(badgeId)
+
+      if (!badge) {
+        return {
+          message: 'Badge not found',
+          isError: true
+        }
+      }
+
       return { badge }
     } catch (e) {
       logger.error(e)
@@ -53,26 +69,13 @@ class BadgeController {
 
   static async getCompletedBadge (userId) {
     try {
-      let userBadge = await UserBadge.findAll({ where: { UserUserId: userId }, raw: true })
-      console.log(userBadge)
-      userBadge = userBadge.filter((u) => {
+      let completedBadges = await UserBadge.findAll({ where: { UserUserId: userId }, raw: true })
+      console.log(completedBadges)
+      completedBadges = completedBadges.filter((u) => {
         return u.inProgress === false
       })
-      // console.log(userBadge)
-      // let arr = []
-      // let u
-      // for (let i = 0; i < userBadge.length; i++) {
-      //     u = userBadge[i]
-      //     if (!arr.includes(u.BadgeBadgeId)) {
-      //         arr.push(u.BadgeBadgeId)
-      //     }
-      //     continue
-      // }
-      // arr = await Promise.all(arr.map(async(a) => {
-      //     u = await Badge.findByPk(a)
-      //     return u
-      // }))
-      return { userBadge }
+
+      return { completedBadges }
     } catch (e) {
       logger.error(e)
       return {
@@ -90,20 +93,20 @@ class BadgeController {
         return u.inProgress === true
       })
       console.log(userBadge)
-      let arr = []
+      let inProgressbadges = []
       let u
       for (let i = 0; i < userBadge.length; i++) {
         u = userBadge[i]
-        if (!arr.includes(u.BadgeBadgeId)) {
-          arr.push(u.BadgeBadgeId)
+        if (!inProgressbadges.includes(u.BadgeBadgeId)) {
+          inProgressbadges.push(u.BadgeBadgeId)
         }
         continue
       }
-      arr = await Promise.all(arr.map(async (a) => {
+      inProgressbadges = await Promise.all(inProgressbadges.map(async (a) => {
         u = await Badge.findByPk(a)
         return u
       }))
-      return { arr }
+      return { inProgressbadges }
     } catch (e) {
       logger.error(e)
       return {

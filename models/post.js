@@ -7,7 +7,7 @@ const schema = {
   image: {
     type: DataTypes.ARRAY(DataTypes.STRING)
   },
-  description: { type: DataTypes.STRING(1200) },
+  description: { type: DataTypes.STRING(2000) },
   badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER },
   // brokeStreak: { type: DataTypes.BOOLEAN, default: false },

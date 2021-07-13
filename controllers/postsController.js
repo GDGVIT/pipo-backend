@@ -168,7 +168,10 @@ class PostsController {
     try {
       const post = await Post.findByPk(postId)
 
-      if (updation.tags) { updation.tags = updation.tags.split(',') }
+      if (updation.tags) {
+        updation.tags = updation.tags.split(',')
+        updation.tags = updation.tags.concat(post.tags)
+      }
 
       if (updation.upvotes) {
         delete updation.upvotes
@@ -189,14 +192,22 @@ class PostsController {
     }
   }
 
-  static async deletePosts (postId) {
+  static async deletePosts (postId, userId) {
     try {
-      const post = await Post.findByPk(postId)
+      const post = await Post.findOne({ where: { postId, userId }, raw: true })
+
       if (post) {
+        if (post.badgeName && post.postNumber) {
+          return {
+            message: "Post can't be deleted, it is part of a badge. You can try updating the post instead",
+            isError: true
+          }
+        }
+
         const deleted = await Post.destroy({ where: { postId } })
         return { deleted }
       }
-      return { message: 'No such posts exist' }
+      return { message: 'No such posts exist or you are accessing a forbidden resource' }
     } catch (e) {
       logger.error(e)
       return {
@@ -210,6 +221,7 @@ class PostsController {
     try {
       const user = await User.findByPk(userId)
       comment.userName = user.userName
+      comment.picture = user.picture
       const commentCreated = await Comment.create(comment)
       return commentCreated
     } catch (e) {
@@ -271,7 +283,7 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      const posts = await Promise.all(users.map(async (user) => {
+      let posts = await Promise.all(users.map(async (user) => {
         const post = await Post.findAll({
           where: { userId: user.userId }
         })
@@ -283,6 +295,7 @@ class PostsController {
         return last
       }))
       const num = parseInt(noOfUsers)
+      posts = posts.filter(function (e) { return e != null })
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
@@ -293,7 +306,7 @@ class PostsController {
     }
   }
 
-  static async getPostsByBadgeName (badgeId, noOfUsers) {
+  static async getPostsByBadge (badgeId, noOfUsers) {
     try {
       const badge = await Badge.findByPk(badgeId)
       let users = await User.findAll()

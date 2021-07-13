@@ -53,7 +53,7 @@ class UserController {
         name,
         picture,
         points: 20,
-        isAdmin: true,
+        isAdmin: false,
         userName
       }
 
@@ -180,7 +180,7 @@ class UserController {
   }
 
   static checkUserName (username) {
-    const re = new RegExp(`^[a-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
+    const re = new RegExp(`^[A-Za-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
     return re.test(username)
   };
 
@@ -203,12 +203,14 @@ class UserController {
         }
         if (!this.checkUserName(user.userName)) {
           return {
-            message: `userName provided doesn't meet the restriction set: 
-                        characters allowed = [a-z0-9_@./#&+-]
-                        {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`,
+            message: `userName provided doesn't meet the restriction set: characters allowed = [A-Za-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`,
             isError: true
           }
         }
+      }
+
+      if (user.isAdmin) {
+        user.isAdmin = false
       }
 
       const resp = await User.update(user, {
