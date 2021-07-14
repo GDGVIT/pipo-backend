@@ -193,14 +193,12 @@ class UserController {
         const finding = await User.findOne({ where: { userName: user.userName } })
         if (finding && (finding.userId !== userId)) {
           return {
-            message: 'User with that userName already exists. Please choose a different userName',
-            isError: true
+            message: 'User with that userName already exists. Please choose a different userName'
           }
         }
         if (!this.checkUserName(user.userName)) {
           return {
-            message: `userName provided doesn't meet the restriction set: characters allowed = [A-Za-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`,
-            isError: true
+            message: `userName provided doesn't meet the restriction set: characters allowed = [A-Za-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`
           }
         }
       }
