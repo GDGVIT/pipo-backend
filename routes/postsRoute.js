@@ -111,6 +111,21 @@ router.post('/comments/', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).json({ response })
 })
 
+router.get('/getComments/:postId', async (req, res) => {
+  const response = await posts.getComments(req.params.postId)
+  return res.status(200).send(response)
+})
+
+router.patch('/updateComment/:commentId', [jwtAuth], async (req, res) => {
+  const response = await posts.updateComment(req.params.commentId, req.body, req.claims.userId)
+  return res.status(200).send(response)
+})
+
+router.delete('/deleteComment/:commentId', [jwtAuth], async (req, res) => {
+  const response = await posts.deleteComment(req.params.commentId, req.claims.userId)
+  return res.status(200).send(response)
+})
+
 // All posts - common for all users
 
 router.get('/allLatestPosts/all', async (req, res) => {
@@ -166,13 +181,6 @@ router.post('/removeUpvote', [jwtAuth], async (req, res) => {
     return res.status(400).send(response)
   }
   return res.status(response.statusCode).send(response)
-})
-
-// Comments
-
-router.get('/getComments/:postId', async (req, res) => {
-  const response = await posts.getComments(req.params.postId)
-  return res.status(200).send(response)
 })
 
 // All users can view these posts

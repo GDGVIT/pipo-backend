@@ -162,6 +162,29 @@ class PostsController {
     }
   }
 
+  static async getPost (postId) {
+    try {
+      const post = await Post.findByPk(postId)
+      const comments = await Comment.findAll({ where: { postId } })
+      if (!post) {
+        return {
+          message: "Post doesn't exist",
+          isError: true
+        }
+      }
+      return {
+        post,
+        comments
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
   static async updatePosts (updation, postId) {
     try {
       const post = await Post.findByPk(postId)
@@ -215,22 +238,6 @@ class PostsController {
     }
   }
 
-  static async createComment (comment, userId) {
-    try {
-      const user = await User.findByPk(userId)
-      comment.userName = user.userName
-      comment.picture = user.picture
-      const commentCreated = await Comment.create(comment)
-      return commentCreated
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
   static async getAllPosts (userId) {
     try {
       const response = await Post.findAll({ userId })
@@ -244,158 +251,7 @@ class PostsController {
     }
   }
 
-  static async sortXByY (arr) {
-    return arr.sort((a, b) => a.points - b.points)
-  }
-
-  static async getAllUsersLatestPosts () {
-    try {
-      let users = await User.findAll()
-
-      users = await this.sortXByY(users)
-      const posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId }
-        })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-        }
-        return last
-      }))
-
-      return { posts }
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
-  static async getXLatestPosts (noOfUsers) {
-    try {
-      let users = await User.findAll()
-
-      users = await this.sortXByY(users)
-      let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId }
-        })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-        }
-        return last
-      }))
-      const num = parseInt(noOfUsers)
-      posts = posts.filter(function (e) { return e != null })
-      return { posts: posts.slice(0, num) }
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
-  static async getPostsByBadge (badgeId, noOfUsers) {
-    try {
-      const badge = await Badge.findByPk(badgeId)
-      let users = await User.findAll()
-
-      users = await this.sortXByY(users)
-      let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId, badgeName: badge.badgeName }
-        })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-        }
-        return last
-      }))
-      const num = parseInt(noOfUsers)
-      posts = posts.filter(post => {
-        return post != null
-      })
-      return { posts: posts.slice(0, num) }
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
-  static async getMyLatestPost (userId) {
-    try {
-      const post = await Post.findAll({
-        where: { userId: userId },
-        raw: true
-      })
-      if (post.length === 0) {
-        return {
-          message: 'No latest post yet.',
-          title: 'Start your journey today!',
-          description: 'No Latest Post yet! Well, this is the beginning of your journey why not add some posts and see what others think about it 🤔. Pick out any challenge you like and work on it🔥. Lost? You can always check out the details by clicking on the logo on top 😊',
-          image: ['https://i.imgur.com/HuNalGN.png']
-        }
-      }
-      const last = post[post.length - 1]
-      return last
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
-  static async getPostsOfAChallange (badgeName, userId) {
-    try {
-      const post = await Post.findAll({
-        where: { userId: userId, badgeName: badgeName }
-      })
-      return post
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
-
-  static async getPost (postId) {
-    try {
-      const post = await Post.findByPk(postId)
-      const comments = await Comment.findAll({ where: { postId } })
-      if (!post) {
-        return {
-          message: "Post doesn't exist",
-          isError: true
-        }
-      }
-      return {
-        post,
-        comments
-      }
-    } catch (e) {
-      logger.error(e)
-      return {
-        isError: true,
-        message: e.toString()
-      }
-    }
-  }
+  // Upvotes
 
   static async upvote (postId, userId) {
     try {
@@ -461,6 +317,24 @@ class PostsController {
     }
   }
 
+  // CRUD for comments
+
+  static async createComment (comment, userId) {
+    try {
+      const user = await User.findByPk(userId)
+      comment.userName = user.userName
+      comment.picture = user.picture
+      const commentCreated = await Comment.create(comment)
+      return commentCreated
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
   static async getComments (postId) {
     try {
       let comments = await Comment.findAll({ where: { postId: postId }, raw: true })
@@ -483,10 +357,209 @@ class PostsController {
     }
   }
 
+  /* eslint-disable no-unused-vars */
+
+  static async updateComment (commentId, comment, userId) {
+    try {
+      const commentExists = await Comment.findByPk(commentId)
+      if (commentExists) {
+        const user = await User.findByPk(userId)
+
+        if (user.userName === commentExists.userName) {
+          const _ = Comment.update(comment, { where: { commentId: commentId } })
+          return { updatedComment: 'Updated' }
+        }
+        return {
+          message: 'You are not authorized to update these resources'
+        }
+      }
+      return {
+        message: "Comment doesn't exist",
+        isError: true
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async deleteComment (commentId, userId) {
+    try {
+      const commentExists = await Comment.findByPk(commentId)
+      if (commentExists) {
+        const user = await User.findByPk(userId)
+
+        if (user.userName === commentExists.userName) {
+          const _ = Comment.destroy({ where: { commentId: commentId } })
+          return { deletedComment: 'deleted comment' }
+        }
+        return {
+          message: 'You are not authorized to delete these resources'
+        }
+      }
+      return {
+        message: "Comment doesn't exist",
+        isError: true
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  /* eslint-disable no-unused-vars */
+
+  // General post controllers
+
+  static async sortXByY (arr) {
+    return arr.sort((a, b) => a.points - b.points)
+  }
+
+  static async getAllUsersLatestPosts () {
+    try {
+      let users = await User.findAll()
+
+      users = await this.sortXByY(users)
+      const posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId }
+        })
+        const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+          last.setDataValue('picture', user.picture)
+        }
+        return last
+      }))
+
+      return { posts }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getXLatestPosts (noOfUsers) {
+    try {
+      let users = await User.findAll()
+
+      users = await this.sortXByY(users)
+      let posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId }
+        })
+        const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+          last.setDataValue('picture', user.picture)
+        }
+        return last
+      }))
+      const num = parseInt(noOfUsers)
+      posts = posts.filter(function (e) { return e != null })
+      return { posts: posts.slice(0, num) }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getPostsByBadge (badgeId, noOfUsers) {
+    try {
+      const badge = await Badge.findByPk(badgeId)
+      let users = await User.findAll()
+
+      users = await this.sortXByY(users)
+      let posts = await Promise.all(users.map(async (user) => {
+        const post = await Post.findAll({
+          where: { userId: user.userId, badgeName: badge.badgeName }
+        })
+        const last = post[post.length - 1]
+        if (last) {
+          last.setDataValue('points', user.points)
+          last.setDataValue('username', user.userName)
+          last.setDataValue('picture', user.picture)
+        }
+        return last
+      }))
+      const num = parseInt(noOfUsers)
+      posts = posts.filter(post => {
+        return post != null
+      })
+      return { posts: posts.slice(0, num) }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getMyLatestPost (userId) {
+    try {
+      const post = await Post.findAll({
+        where: { userId: userId },
+        raw: true
+      })
+      if (post.length === 0) {
+        return {
+          message: 'No latest post yet.',
+          title: 'Start your journey today!',
+          description: 'No Latest Post yet! Well, this is the beginning of your journey why not add some posts and see what others think about it 🤔. Pick out any challenge you like and work on it🔥. Lost? You can always check out the details by clicking on the logo on top 😊',
+          image: ['https://i.imgur.com/HuNalGN.png']
+        }
+      }
+      const last = post[post.length - 1]
+      return last
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getPostsOfAChallange (badgeName, userId) {
+    try {
+      const post = await Post.findAll({
+        where: { userId: userId, badgeName: badgeName }
+      })
+      return post
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
   static async getAllPostsOf (userId) {
     try {
       const posts = await Post.findAll({ where: { userId: userId } })
-      return { posts, statusCode: 200 }
+      const user = await User.findByPk(userId)
+      return {
+        picture: user.picture,
+        userName: user.userName,
+        posts,
+        statusCode: 200
+      }
     } catch (e) {
       logger.error(e)
       return {
@@ -500,7 +573,10 @@ class PostsController {
   static async getFewPostsOf (userId, number) {
     try {
       const posts = await Post.findAll({ where: { userId: userId } })
+      const user = await User.findByPk(userId)
       return {
+        picture: user.picture,
+        userName: user.userName,
         posts: posts.slice(0, number),
         statusCode: 200
       }
@@ -518,7 +594,8 @@ class PostsController {
     try {
       const badge = await Badge.findByPk(badgeId)
       const response = await Post.findAll({ where: { badgeName: badge.badgeName, userId }, raw: true })
-      return { response, statusCode: 200 }
+      const user = await User.findByPk(userId)
+      return { picture: user.picture, userName: user.userName, response, statusCode: 200 }
     } catch (e) {
       logger.error(e)
       return {
