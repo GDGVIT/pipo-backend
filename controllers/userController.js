@@ -1,4 +1,4 @@
-const { User } = require('../models/relations')
+const { User, Follow } = require('../models/relations')
 
 const admin = require('firebase-admin')
 const logger = require('../logging/logger')
@@ -10,6 +10,10 @@ admin.initializeApp({
   databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
+const USERNAME_LENGTH_LIMIT = 10
+
+const { uniqueNamesGenerator, animals, starWars } = require('unique-names-generator')
+
 class UserController {
   static async createUser (idToken) {
     try {
@@ -17,32 +21,47 @@ class UserController {
       const userInfo = await adminInstance.verifyIdToken(idToken)
       const name = userInfo.name
       const email = userInfo.email
-
+      const picture = userInfo.picture
       const user = await User.findOne({ where: { email: email } })
 
       if (user) {
         return {
-          isError: true,
           message: 'This email already exists',
-          status: 409,
           isLoggedIn: true,
-          user
+          user,
+          status: 200
         }
       }
-      console.log(user)
+
+      let userName
+
+      while (true) {
+        userName = uniqueNamesGenerator({
+          dictionaries: [animals, starWars],
+          length: 1
+        })
+        const user1 = await User.findOne({ where: { userName }, raw: true })
+        if (!user1) {
+          userName = userName.substr(0, 10)
+          break
+        }
+      }
+
       const auth = {
         email,
         name,
+        picture,
         points: 20,
-        isAdmin: false
+        isAdmin: false,
+        userName
       }
+
       const createdUser = await User.create(auth)
-      console.log(createdUser)
+
       return {
         message: 'User created',
-        userInfo,
-        createdUser,
-        status: 200
+        user: createdUser,
+        status: 201
       }
     } catch (e) {
       logger.error(e)
@@ -85,8 +104,47 @@ class UserController {
 
   static async getUser (userId) {
     try {
+      const user = await User.findOne({ where: { userId }, raw: true })
+      if (user) {
+        return user
+      }
+      return { message: "User doesn't exist", isError: true }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString(),
+        status: 400
+      }
+    }
+  }
+
+  static async getUserUserId (userId, myUserId) {
+    try {
       const user = await User.findByPk(userId)
-      return user
+
+      if (user) {
+        user.todo = []
+
+        const friends = await Follow.findAll({ where: { isFriend: true, followerId: userId }, raw: true })
+        const followers = await Follow.findAll({ where: { followingId: userId }, raw: true })
+        const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+
+        let amIFollowing = await Follow.findAll({ where: { followerId: myUserId, followingId: userId }, raw: true })
+
+        if (amIFollowing.length === 0) {
+          amIFollowing = false
+        } else amIFollowing = true
+
+        return {
+          user,
+          friends: friends.length,
+          followers: followers.length,
+          following: following.length,
+          amIFollowing
+        }
+      }
+      return { message: "User doesn't exist", isError: true }
     } catch (e) {
       logger.error(e)
       return {
@@ -100,7 +158,6 @@ class UserController {
   static async getAuthByEmail (auth) {
     try {
       const user = await User.findOne({ where: { email: auth.email, isAdmin: auth.isAdmin } })
-      console.log(user)
       user.password = ''
       if (!user) {
         return {
@@ -109,6 +166,53 @@ class UserController {
         }
       }
       return user
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static checkUserName (username) {
+    const re = new RegExp(`^[A-Za-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
+    return re.test(username)
+  };
+
+  static async update (user, userId) {
+    try {
+      if (user.userName === '') {
+        return {
+          message: "Username can't be empty",
+          isError: true
+        }
+      }
+
+      if (user.userName) {
+        const finding = await User.findOne({ where: { userName: user.userName } })
+        if (finding && (finding.userId !== userId)) {
+          return {
+            message: 'User with that userName already exists. Please choose a different userName'
+          }
+        }
+        if (!this.checkUserName(user.userName)) {
+          return {
+            message: `userName provided doesn't meet the restriction set: characters allowed = [A-Za-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`
+          }
+        }
+      }
+
+      if (user.isAdmin) {
+        user.isAdmin = false
+      }
+
+      const resp = await User.update(user, {
+        where: {
+          userId
+        }
+      })
+      return resp
     } catch (e) {
       logger.error(e)
       return {

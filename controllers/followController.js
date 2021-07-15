@@ -37,12 +37,19 @@ class FollowController {
       if (userId === makeFriendId) {
         return { message: "You can't make yourself a friend", isError: true }
       }
+
+      let follow,
+        friend1Created,
+        friend2Created
+
       const getFollow1 = await Follow.findOne({
         where: {
           followerId: userId,
           followingId: makeFriendId
-        }
+        },
+        raw: true
       })
+
       const getFollow2 = await Follow.findOne({
         where: {
           followerId: makeFriendId,
@@ -50,9 +57,13 @@ class FollowController {
         }
       })
 
-      let follow,
-        friend1Created,
-        friend2Created
+      if (getFollow1) {
+        if (getFollow1.isFriend) {
+          return {
+            message: 'You are already friends'
+          }
+        }
+      }
 
       if (!getFollow1) {
         follow = {
@@ -90,6 +101,7 @@ class FollowController {
           }
         })
       }
+
       return { friend1Created, friend2Created }
     } catch (e) {
       logger.error(e)
@@ -115,9 +127,21 @@ class FollowController {
 
   static async getAllFollowing (userId) {
     try {
-      console.log(userId)
       const following = await Follow.findAll({ where: { followerId: userId } })
       return following
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async getAllFriends (userId) {
+    try {
+      const friends = await Follow.findAll({ where: { isFriend: true, followerId: userId } })
+      return friends
     } catch (e) {
       logger.error(e)
       return {
@@ -135,6 +159,12 @@ class FollowController {
           followingId: followWhomId
         }
       })
+      const ifRevExists = await Follow.findOne({
+        where: {
+          followerId: followWhomId,
+          followingId: userId
+        }
+      })
       if (ifExists) {
         const deletedFollow = await Follow.destroy({
           where: {
@@ -142,6 +172,22 @@ class FollowController {
             followingId: followWhomId
           }
         })
+
+        if (ifRevExists) {
+          const follow = {
+            followerId: followWhomId,
+            followingId: userId,
+            isFriend: false
+          }
+          const friendDeleted = await Follow.update(follow, {
+            where: {
+              followerId: followWhomId,
+              followingId: userId
+            }
+          })
+          return { friendDeleted, deletedFollow }
+        }
+
         return { deletedFollow }
       } else {
         return {
@@ -166,6 +212,14 @@ class FollowController {
           followingId: userId
         }
       })
+
+      const ifRevExists = await Follow.findOne({
+        where: {
+          followerId: userId,
+          followingId: followerId
+        }
+      })
+
       if (ifExists) {
         const deletedFollower = await Follow.destroy({
           where: {
@@ -173,6 +227,22 @@ class FollowController {
             followingId: userId
           }
         })
+
+        if (ifRevExists) {
+          const follow = {
+            followerId: userId,
+            followingId: followerId,
+            isFriend: false
+          }
+          const friendDeleted = await Follow.update(follow, {
+            where: {
+              followerId: userId,
+              followingId: followerId
+            }
+          })
+          return { friendDeleted, deletedFollower }
+        }
+
         return { deletedFollower }
       } else {
         return {
@@ -180,6 +250,44 @@ class FollowController {
           message: "relation doesn't exist"
         }
       }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async stopFriend (userId, friendId) {
+    try {
+      const follow = {
+        followerId: userId,
+        followingId: friendId,
+        isFriend: false
+      }
+
+      const followRev = {
+        followerId: friendId,
+        followingId: userId,
+        isFriend: false
+      }
+
+      const friendDeleted = await Follow.update(follow, {
+        where: {
+          followerId: userId,
+          followingId: friendId
+        }
+      })
+
+      const revFriendDeleted = await Follow.update(followRev, {
+        where: {
+          followerId: friendId,
+          followingId: userId
+        }
+      })
+
+      return { friendDeleted, revFriendDeleted }
     } catch (e) {
       logger.error(e)
       return {

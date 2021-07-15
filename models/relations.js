@@ -5,6 +5,7 @@ const UserBadge = require('./userBadge')
 const Post = require('./post')
 const Comment = require('./comment')
 const Follow = require('./follow')
+// const Challange = require('./challange')
 
 User.Badge = User.belongsToMany(Badge, {
   through: UserBadge

@@ -3,15 +3,15 @@ const sequelize = require('../db/db')
 
 const schema = {
   postId: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true },
-  title: { type: DataTypes.STRING },
+  title: { type: DataTypes.STRING, allowNull: false },
   image: {
     type: DataTypes.ARRAY(DataTypes.STRING)
   },
-  description: { type: DataTypes.STRING(128) },
+  description: { type: DataTypes.STRING(2000) },
   badgeName: { type: DataTypes.STRING },
   postNumber: { type: DataTypes.INTEGER },
-  tags: { type: DataTypes.ARRAY(DataTypes.STRING) },
-  upvoted: { type: DataTypes.ARRAY(DataTypes.UUID) }
+  tags: { type: DataTypes.ARRAY(DataTypes.STRING), default: [] },
+  upvotes: { type: DataTypes.ARRAY(DataTypes.UUID), default: [] }
 }
 
 const options = {

@@ -4,21 +4,20 @@ const logger = require('../logging/logger')
 class TodoController {
   static async createTodo (todo, email) {
     try {
-      const todoFound = await User.findAll({ where: { email: email } })
+      const todoFound = await User.findAll({ where: { email: email }, raw: true })
+      todo = todo.split(',')
+      todo.filter(function (e) { return true })
       if (todoFound[0].todo == null) {
-        const arr = []
-        arr.push(todo)
-        todoFound[0].todo = arr
         const val = {}
-        val.todo = todoFound[0].todo
+        val.todo = todo
         const updatedUser = await User.update(val, { where: { email: email } })
         return {
           message: 'Added first todo',
           updatedUser
         }
       }
-      const arr = todoFound[0].todo
-      arr.push(todo)
+      let arr = todoFound[0].todo
+      arr = arr.concat(todo)
       todoFound[0].todo = arr
       const val = {}
       val.todo = todoFound[0].todo
@@ -57,7 +56,6 @@ class TodoController {
       if (todoFound[0].todo == null || todoFound[0].todo.length === 0) {
         return {
           message: 'Todo doesn\'t exist, so can\'t delete anything from it'
-
         }
       }
       const arr = todoFound[0].todo
