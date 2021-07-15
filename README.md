@@ -14,28 +14,32 @@
 
 ## Functionalities and routes
 
-- [ ]  Auth route (name, email)
-    - [ ]  Post(signup)
-    - [ ]  Post(login)
-- [ ]  Posts route
-    - [ ]  Get all users + recent posts route(sorted by points)
-- [ ]  User route (username, name, email, completed badges[badgeName], in-progress badges, followers, following, friends)
-    - [ ]  Get details
-- [ ]  Users route
-    - [ ]  Get all posts for a user (sorted by date/time)
+Ver 1:
+
+- [x]  Auth route (name, email)
+    - [x]  Post(signup)
+    - [x]  Post(login)
+- [x]  Posts route
+    - [x]  Get all users + recent posts route(sorted by points)
+- [x]  User route (username, name, email, completed badges[badgeName], in-progress badges, followers, following, friends)
+    - [x]  Get details
+- [x]  Users route
+    - [x]  Get all posts for a user (sorted by date/time)
 
 ---
 
-- [ ]  Badge
-    - [ ]  (deprecated route) Create a badge
-    - [ ]  Join a badge ( user-badge )
-    - [ ]  Create a post (route change)
-- [ ]  Get posts for a badge
-    - [ ]  Get request
-- [ ]  Post a post
-    - [ ]  Post request
+- [x]  Badge
+    - [x]  (deprecated route) Create a badge
+    - [x]  Join a badge ( user-badge )
+    - [x]  Create a post (route change)
+- [x]  Get posts for a badge
+    - [x]  Get request
+- [x]  Post a post
+    - [x]  Post request
 
 ---
+
+Ver 2:
 
 - [ ]  Route for checking time
 - [ ]  Challenge
