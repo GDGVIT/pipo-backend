@@ -33,9 +33,10 @@ const limiter = rateLimit({
 app.use(express.json())
 app.use(compression())
 app.use(cors())
+app.use(limiter)
+
 // Logging
 app.use(morgan)
-app.use(limiter)
 
 // Mount routes
 app.use('/', routes)
