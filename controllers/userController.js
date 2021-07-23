@@ -1,14 +1,16 @@
 const { User, Follow } = require('../models/relations')
 
-const admin = require('firebase-admin')
+// const admin = require('firebase-admin')
 const logger = require('../logging/logger')
 
-const serviceAccount = require('../firebase.json')
+// const serviceAccount = require('../firebase.json')
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
-})
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
+// })
+
+const admin = require('../config')
 
 const USERNAME_LENGTH_LIMIT = 10
 
