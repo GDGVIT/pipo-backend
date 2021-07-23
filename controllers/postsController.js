@@ -508,7 +508,7 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      const posts = await Promise.all(users.map(async (user) => {
+      let posts = await Promise.all(users.map(async (user) => {
         const post = await Post.findAll({
           where: { userId: user.userId }
         })
@@ -520,6 +520,8 @@ class PostsController {
         }
         return last
       }))
+
+      posts = posts.filter(function (e) { return e != null })
 
       return { posts }
     } catch (e) {
@@ -549,7 +551,9 @@ class PostsController {
         return last
       }))
       const num = parseInt(noOfUsers)
+
       posts = posts.filter(function (e) { return e != null })
+
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
@@ -579,9 +583,9 @@ class PostsController {
         return last
       }))
       const num = parseInt(noOfUsers)
-      posts = posts.filter(post => {
-        return post != null
-      })
+
+      posts = posts.filter(function (e) { return e != null })
+
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
@@ -607,6 +611,7 @@ class PostsController {
         }
       }
       const last = post[post.length - 1]
+
       return last
     } catch (e) {
       logger.error(e)
@@ -692,11 +697,22 @@ class PostsController {
     try {
       const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
 
-      const posts = await Promise.all(following.map(async (f) => {
-        const post = await Post.findAll({ where: { userId: f.followingId } })
-        const user = await User.findOne({ where: { userId: f.followingId } })
-        return { user, postList: post[0] }
+      let posts = await Promise.all(following.map(async (f) => {
+        const post = await Post.findAll({
+          where: { userId: f.followingId },
+          raw: true
+        })
+        const user = await User.findOne({ where: { userId: f.followingId }, raw: true })
+        const latestPost = post[0]
+        console.log(latestPost)
+        if (post[0]) {
+          latestPost.userName = user.userName
+          latestPost.picture = user.picture
+        }
+        return latestPost
       }))
+
+      posts = posts.filter(function (e) { return e != null })
 
       return { posts, statusCode: 200 }
     } catch (e) {
