@@ -50,6 +50,7 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
     if (req.file) {
+      req.body.file = req.file
       req.body.image = []
       await cloudinary.uploader.upload('./uploads/' +
                 req.claims.userId + req.file.originalname,
@@ -71,44 +72,20 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
 router.post('/restart', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
-    if (req.file) {
-      req.body.image = []
-      await cloudinary.uploader.upload('./uploads/' +
-                req.claims.userId + req.file.originalname,
-      async function (error, result) {
-        if (error) {
-          return res.status(error.http_code).send(error.message)
-        }
-        req.body.image.push(result.secure_url)
-        fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
-      })
-    }
     const response = await posts.restartToContinue(req.body)
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
-    return res.status(400).send({ message: 'File not provided' })
+    return res.status(400).send({ message: e })
   }
 })
 
 router.post('/usePoints', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
-    if (req.file) {
-      req.body.image = []
-      await cloudinary.uploader.upload('./uploads/' +
-                req.claims.userId + req.file.originalname,
-      async function (error, result) {
-        if (error) {
-          return res.status(error.http_code).send(error.message)
-        }
-        req.body.image.push(result.secure_url)
-        fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
-      })
-    }
     const response = await posts.usePointsToContinue(req.body)
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
-    return res.status(400).send({ message: 'File not provided' })
+    return res.status(400).send({ message: e })
   }
 })
 

@@ -72,7 +72,6 @@ class BadgeController {
       completedBadges = completedBadges.filter((u) => {
         return u.inProgress === false
       })
-
       return { completedBadges }
     } catch (e) {
       logger.error(e)
