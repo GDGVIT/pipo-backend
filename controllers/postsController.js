@@ -42,10 +42,11 @@ class PostsController {
             daysLeft: badge.days - 1,
             inProgress: true
           }
-          console.log(userBadgeContent)
-          console.log('2')
+          const postCreated = await Post.create(post)
+
+          // Create and update userBadge
+
           userBadge = await UserBadge.create(userBadgeContent)
-          console.log('3')
           post.postNumber = badge.days - userBadge.daysLeft
 
           if (!userBadge.daysLeft) {
@@ -58,7 +59,6 @@ class PostsController {
             })
           }
 
-          const postCreated = await Post.create(post)
           return { postCreated: postCreated }
         }
 
