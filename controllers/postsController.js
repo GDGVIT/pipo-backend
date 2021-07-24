@@ -509,10 +509,12 @@ class PostsController {
 
       users = await this.sortXByY(users)
       let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
+        let post = await Post.findAll({
           where: { userId: user.userId }
         })
-        const last = post[post.length - 1]
+        post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+
+        const last = post[0]
         if (last) {
           last.setDataValue('points', user.points)
           last.setDataValue('username', user.userName)
@@ -539,10 +541,11 @@ class PostsController {
 
       users = await this.sortXByY(users)
       let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
+        let post = await Post.findAll({
           where: { userId: user.userId }
         })
-        const last = post[post.length - 1]
+        post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+        const last = post[0]
         if (last) {
           last.setDataValue('points', user.points)
           last.setDataValue('username', user.userName)
@@ -698,11 +701,13 @@ class PostsController {
       const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
 
       let posts = await Promise.all(following.map(async (f) => {
-        const post = await Post.findAll({
+        let post = await Post.findAll({
           where: { userId: f.followingId },
           raw: true
         })
         const user = await User.findOne({ where: { userId: f.followingId }, raw: true })
+        post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+
         const latestPost = post[0]
         if (post[0]) {
           latestPost.userName = user.userName
