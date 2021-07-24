@@ -41,12 +41,17 @@ class PostsController {
             daysLeft: badge.days - 1,
             inProgress: true
           }
+
+          console.log('1')
+
+          post.postNumber = badge.days - userBadge.daysLeft
           const postCreated = await Post.create(post)
+
+          console.log('2')
 
           // Create and update userBadge
 
           userBadge = await UserBadge.create(userBadgeContent)
-          post.postNumber = badge.days - userBadge.daysLeft
 
           if (!userBadge.daysLeft) {
             userBadge.inProgress = false
