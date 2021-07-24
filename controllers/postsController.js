@@ -22,7 +22,6 @@ class PostsController {
         const badge = await Badge.findOne({ where: { badgeName: post.badgeName } })
         if (!badge) {
           return {
-            isError: true,
             message: 'Badge not found'
           }
         }
@@ -311,8 +310,7 @@ class PostsController {
       if (post) {
         if (post.badgeName && post.postNumber) {
           return {
-            message: "Post can't be deleted, it is part of a badge. You can try updating the post instead",
-            isError: true
+            message: "Post can't be deleted, it is part of a badge. You can try updating the post instead"
           }
         }
 
@@ -465,8 +463,7 @@ class PostsController {
         }
       }
       return {
-        message: "Comment doesn't exist",
-        isError: true
+        message: "Comment doesn't exist"
       }
     } catch (e) {
       logger.error(e)
@@ -492,8 +489,7 @@ class PostsController {
         }
       }
       return {
-        message: "Comment doesn't exist",
-        isError: true
+        message: "Comment doesn't exist"
       }
     } catch (e) {
       logger.error(e)
