@@ -80,6 +80,13 @@ class PostsController {
 
         const lastPost = await Post.findOne({ where: { userId: post.userId, badgeName: post.badgeName, postNumber: (badge.days - userBadge.daysLeft) }, raw: true })
 
+        if (!lastPost) {
+          return {
+            message: 'No last post exists'
+          }
+        }
+        console.log('#')
+
         const diff = await this.dateDiffInDays(lastPost.createDate, date)
 
         if (!diff) {
