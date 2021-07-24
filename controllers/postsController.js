@@ -280,7 +280,6 @@ class PostsController {
 
       if (updation.tags) {
         updation.tags = updation.tags.split(',')
-        updation.tags = updation.tags.concat(post.tags)
       }
 
       if (updation.upvotes) {
