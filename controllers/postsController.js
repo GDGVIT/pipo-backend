@@ -32,7 +32,7 @@ class PostsController {
         // Check if user has already started with the badge
 
         let userBadge = await UserBadge.findOne({ where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId } })
-
+        console.log('1')
         // First post
 
         if (!userBadge) {
@@ -42,7 +42,10 @@ class PostsController {
             daysLeft: badge.days - 1,
             inProgress: true
           }
+          console.log(userBadgeContent)
+          console.log('2')
           userBadge = await UserBadge.create(userBadgeContent)
+          console.log('3')
           post.postNumber = badge.days - userBadge.daysLeft
 
           if (!userBadge.daysLeft) {
