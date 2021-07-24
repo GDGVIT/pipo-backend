@@ -704,10 +704,10 @@ class PostsController {
         })
         const user = await User.findOne({ where: { userId: f.followingId }, raw: true })
         const latestPost = post[0]
-        console.log(latestPost)
         if (post[0]) {
           latestPost.userName = user.userName
           latestPost.picture = user.picture
+          latestPost.points = user.points
         }
         return latestPost
       }))
