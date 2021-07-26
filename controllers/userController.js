@@ -53,8 +53,8 @@ class UserController {
         email,
         name,
         picture,
-        points: 20,
-        isAdmin: false,
+        points: 2000000,
+        isAdmin: true,
         userName
       }
 
