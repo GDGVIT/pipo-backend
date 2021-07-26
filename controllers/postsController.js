@@ -373,7 +373,7 @@ class PostsController {
 
   static async getAllPosts (userId) {
     try {
-      const response = await Post.findAll({ userId })
+      const response = await Post.findAll({ where: { userId } })
       return response
     } catch (e) {
       logger.error(e)
