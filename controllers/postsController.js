@@ -580,7 +580,7 @@ class PostsController {
           let post = await Post.findAll({
             where: { userId: user.userId }
           })
-          post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+          post = post.sort((a, b) => b.createDate - a.createDate)
 
           const last = post[0]
           if (last) {
@@ -616,7 +616,7 @@ class PostsController {
           let post = await Post.findAll({
             where: { userId: user.userId }
           })
-          post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+          post = post.sort((a, b) => b.createDate - a.createDate)
           const last = post[0]
           if (last) {
             last.setDataValue('points', user.points)
@@ -800,7 +800,7 @@ class PostsController {
             where: { userId: f.followingId },
             raw: true
           })
-          post = post.sort((a, b) => b.createDate - a.createDate).reverse()
+          post = post.sort((a, b) => b.createDate - a.createDate)
 
           const latestPost = post[0]
           if (post[0]) {
