@@ -48,6 +48,8 @@ class PostsController {
         }
       }
 
+      console.log('1')
+
       // UserBadge not found
 
       let userBadge = await UserBadge.findOne({
@@ -98,10 +100,6 @@ class PostsController {
             }
           }
         }
-        // if (!firstPost) {
-        //     post.postNumber = 1
-        // }
-        // updateUserBadge.daysLeft = userBadge.daysLeft - 1
       }
 
       const userBadgeContent = {}
@@ -131,7 +129,12 @@ class PostsController {
 
       post.postNumber = badge.days - userBadgeContent.daysLeft
 
-      postCreated = await Post.create(post)
+      console.log('1')
+
+      postCreated = await Post.create(post).catch(err => console.log(err))
+
+      console.log('2')
+
       const updatedUserBadge = await UserBadge.update(userBadgeContent, {
         where: {
           BadgeBadgeId: badge.badgeId,
