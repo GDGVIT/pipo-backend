@@ -48,6 +48,7 @@ const uploads = multer({
 
 router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
+    console.log('1')
     req.body.userId = req.claims.userId
     if (req.file) {
       req.body.file = req.file
@@ -62,6 +63,7 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
         fs.unlinkSync('./uploads/' + req.claims.userId + req.file.originalname)
       })
     }
+    console.log('2')
     const response = await posts.createPost(req.body)
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {

@@ -20,143 +20,131 @@ class PostsController {
 
   static async createPost (post) {
     try {
-      post.postNumber = 0
-
       if (post.tags) {
         post.tags = post.tags.split(',')
       }
-      if (post.badgeName) {
-        // Handle if badge not found
 
-        const badge = await Badge.findOne({
-          where: { badgeName: post.badgeName }
-        })
-        if (!badge) {
-          return {
-            isError: true,
-            message: 'Badge not found'
-          }
+      let postCreated
+      let message
+
+      // Badgeless post
+
+      if (!post.badgeName) {
+        post.postNumber = null
+        postCreated = await Post.create(post)
+        return {
+          message: 'Badgeless post created',
+          postCreated
         }
+      }
 
-        // Check if streak can be recovered
+      // Badge not found
 
-        // Check if user has already started with the badge
-
-        let userBadge = await UserBadge.findOne({
-          where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId }
-        })
-        // First post
-
-        if (!userBadge) {
-          const userBadgeContent = {
-            BadgeBadgeId: badge.badgeId,
-            UserUserId: post.userId,
-            daysLeft: badge.days - 1,
-            inProgress: true
-          }
-
-          post.postNumber = badge.days - userBadgeContent.daysLeft
-          const postCreated = await Post.create(post)
-
-          // Create and update userBadge
-          userBadge = await UserBadge.create(userBadgeContent)
-
-          if (!userBadge.daysLeft) {
-            userBadge.inProgress = false
-            userBadge = await UserBadge.update(userBadge, {
-              where: {
-                BadgeBadgeId: badge.badgeId,
-                UserUserId: post.userId
-              }
-            })
-          }
-
-          return { postCreated: postCreated }
+      const badge = await Badge.findOne({ where: { badgeName: post.badgeName }, raw: true })
+      if (!badge) {
+        return {
+          message: 'Badge not found',
+          isError: true
         }
+      }
 
-        let isComplete = false
+      // UserBadge not found
 
-        // Check if a user is posting on a completed challenge
+      let userBadge = await UserBadge.findOne({
+        where: {
+          UserUserId: post.userId,
+          BadgeBadgeId: badge.badgeId
+        },
+        raw: true
+      })
 
-        if (userBadge.daysLeft === 0) {
+      if (userBadge) {
+        if (userBadge.inProgress === false) {
           post.postNumber = null
-          const postCreated = await Post.create(post)
-          isComplete = true
+          postCreated = await Post.create(post)
           return {
-            message: 'This challenge has been completed by you',
+            message: 'Posting on a completed challenge.',
             postCreated,
-            isComplete
+            isComplete: !(userBadge.inProgress)
           }
         }
-
-        // If more posts are posted on the same day for a badge
-
-        const date = new Date()
 
         const lastPost = await Post.findOne({
           where: {
             userId: post.userId,
             badgeName: post.badgeName,
-            postNumber: badge.days - userBadge.daysLeft
+            postNumber: (badge.days - userBadge.daysLeft)
           },
           raw: true
         })
 
-        if (!lastPost) {
-          return {
-            message: 'No last post exists'
+        if (lastPost) {
+          const date = new Date()
+          const diff = await this.dateDiffInDays(lastPost.createDate, date)
+
+          if (!diff) {
+            post.postNumber = null
+            const postNewCreated = await Post.create(post)
+            return {
+              message: 'You already posted for today, created this as a new post in the badge',
+              postCreated: postNewCreated
+            }
+          }
+
+          if (diff > 1) {
+            return {
+              message: 'Streak broken : either restart streak or use points to continue, Post was not made yet',
+              isStreakBroken: true
+            }
           }
         }
-
-        const diff = await this.dateDiffInDays(lastPost.createDate, date)
-
-        if (!diff) {
-          post.postNumber = null
-          const postNewCreated = await Post.create(post)
-          return {
-            message: 'You already posted for today, created this as a new post in the badge',
-            postCreated: postNewCreated
-          }
-        }
-
-        // Let user start the badge afresh if his streak is broken
-
-        if (diff > 1) {
-          return {
-            message: 'Streak broken : either restart streak or use points to continue, Post was not made yet',
-            isStreakBroken: true
-          }
-        }
-
-        // create new post under badge and check if it is last post, or if challenge is completed
-
-        const obj = {
-          daysLeft: userBadge.daysLeft - 1
-        }
-
-        let message = `${obj.daysLeft} day(s) is/are left for your challenge`
-
-        if (obj.daysLeft === 0) {
-          obj.inProgress = false
-          message = 'Congratulations!! You completed the challenge'
-          isComplete = true
-        }
-
-        const resp = await UserBadge.update(obj, {
-          where: {
-            BadgeBadgeId: badge.badgeId,
-            UserUserId: post.userId
-          }
-        })
-        post.postNumber = badge.days - userBadge.daysLeft + 1
-        const postCreated = await Post.create(post)
-        return { postCreated: postCreated, resp: resp, message, isComplete }
+        // if (!firstPost) {
+        //     post.postNumber = 1
+        // }
+        // updateUserBadge.daysLeft = userBadge.daysLeft - 1
       }
 
-      // without badge post
+      const userBadgeContent = {}
 
-      const postCreated = await Post.create(post)
-      return { postCreated: postCreated }
+      if (!userBadge) {
+        const userBadgeContent = {
+          UserUserId: post.userId,
+          BadgeBadgeId: badge.badgeId,
+          inProgress: true,
+          daysLeft: badge.days
+        }
+        userBadge = await UserBadge.create(userBadgeContent)
+      }
+
+      // Update userBadge
+      const t = userBadge.daysLeft - 1
+      userBadgeContent.daysLeft = t
+
+      message = 'Created post'
+
+      // Check if challenge is over
+
+      if (userBadgeContent.daysLeft === 0) {
+        userBadgeContent.inProgress = false
+        message = 'Hurray!! You have completed the challenge'
+      }
+
+      post.postNumber = badge.days - userBadgeContent.daysLeft
+
+      postCreated = await Post.create(post)
+      const updatedUserBadge = await UserBadge.update(userBadgeContent, {
+        where: {
+          BadgeBadgeId: badge.badgeId,
+          UserUserId: post.userId
+        }
+      })
+
+      return {
+        message,
+        postCreated,
+        updatedUserBadge,
+        isComplete: (!userBadgeContent.inProgress)
+      }
     } catch (e) {
       logger.error(e)
       return {
@@ -177,6 +165,12 @@ class PostsController {
           where: { badgeName: post.badgeName },
           raw: true
         })
+
+        if (!badge) {
+          return {
+            message: 'No such badge exists'
+          }
+        }
 
         if (allPosts) {
           await Promise.all(
