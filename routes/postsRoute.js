@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
 })
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'video/mp4' || file.mimetype === 'image/png') {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'video/mp4' || file.mimetype === 'image/png' || file.mimetype === 'image/gif') {
     cb(null, true)
   } else {
     cb(null, false)
@@ -45,11 +45,13 @@ const uploads = multer({
 })
 
 // CRUD
-
 router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
   try {
     req.body.userId = req.claims.userId
+    console.log(req.file)
+
     if (req.file) {
+      req.body.file = req.file
       req.body.image = []
       await cloudinary.uploader.upload('./uploads/' +
                 req.claims.userId + req.file.originalname,
@@ -65,6 +67,26 @@ router.post('/', [jwtAuth], uploads.single('post'), async (req, res) => {
     return res.status(response.isError ? 400 : 200).json({ response })
   } catch (e) {
     return res.status(400).send({ message: 'File not provided' })
+  }
+})
+
+router.post('/restart', [jwtAuth], uploads.single('post'), async (req, res) => {
+  try {
+    req.body.userId = req.claims.userId
+    const response = await posts.restartToContinue(req.body)
+    return res.status(response.isError ? 400 : 200).json({ response })
+  } catch (e) {
+    return res.status(400).send({ message: e })
+  }
+})
+
+router.post('/usePoints', [jwtAuth], uploads.single('post'), async (req, res) => {
+  try {
+    req.body.userId = req.claims.userId
+    const response = await posts.usePointsToContinue(req.body)
+    return res.status(response.isError ? 400 : 200).json({ response })
+  } catch (e) {
+    return res.status(400).send({ message: e })
   }
 })
 

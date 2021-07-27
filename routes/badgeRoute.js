@@ -25,8 +25,18 @@ router.get('/inProgress', [jwtAuth], async (req, res) => {
   return res.status(response.isError ? 400 : 200).send(response)
 })
 
+router.get('/inProgress/:userId', async (req, res) => {
+  const response = await badge.getInProgressBadge(req.params.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
 router.get('/completed', [jwtAuth], async (req, res) => {
   const response = await badge.getCompletedBadge(req.claims.userId)
+  return res.status(response.isError ? 400 : 200).send(response)
+})
+
+router.get('/completed/:userId', async (req, res) => {
+  const response = await badge.getCompletedBadge(req.params.userId)
   return res.status(response.isError ? 400 : 200).send(response)
 })
 

@@ -14,6 +14,6 @@ const options = {
   timestamps: true
 }
 
-const userBadge = sequelize.define('UserBadge', schema, options)
+const userBadge = sequelize.define('UserBadges', schema, options)
 
 module.exports = userBadge

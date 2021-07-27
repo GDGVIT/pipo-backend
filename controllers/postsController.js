@@ -1,111 +1,193 @@
-const { Post, Badge, UserBadge, User, Comment, Follow } = require('../models/relations')
+const {
+  Post,
+  Badge,
+  UserBadge,
+  User,
+  Comment,
+  Follow
+} = require('../models/relations')
 const logger = require('../logging/logger')
 
+const _MS_PER_DAY = 1000 * 60 * 60 * 24
+const DEDUCT_POINTS = 2
+
 class PostsController {
+  static async dateDiffInDays (a, b) {
+    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())
+    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())
+    return Math.floor((utc2 - utc1) / _MS_PER_DAY)
+  }
+
   static async createPost (post) {
     try {
-      post.postNumber = 0
+      if (post.tags) {
+        post.tags = post.tags.split(',')
+      }
 
-      if (post.tags) { post.tags = post.tags.split(',') }
-      if (post.badgeName) {
-        // Handle if badge not found
+      let postCreated
+      let message
 
-        const badge = await Badge.findOne({ where: { badgeName: post.badgeName } })
-        if (!badge) {
-          return {
-            isError: true,
-            message: 'Badge not found'
-          }
+      // Badgeless post
+
+      if (!post.badgeName) {
+        post.postNumber = null
+        postCreated = await Post.create(post)
+        return {
+          message: 'Badgeless post created',
+          postCreated
         }
+      }
 
-        // Check if streak can be recovered
+      // Badge not found
 
-        // if (!badge.hasChallenge) {
-        // // for ver 2
-        // }
-
-        // Check if user has already started with the badge
-
-        let userBadge = await UserBadge.findOne({ where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId } })
-
-        // First post
-
-        if (!userBadge) {
-          const userBadgeContent = {
-            BadgeBadgeId: badge.badgeId,
-            UserUserId: post.userId,
-            daysLeft: badge.days - 1,
-            inProgress: true
-          }
-          userBadge = await UserBadge.create(userBadgeContent)
-          post.postNumber = badge.days - userBadge.daysLeft
-
-          if (!userBadge.daysLeft) {
-            userBadge.inProgress = false
-            userBadge = await UserBadge.update(userBadge, {
-              where: {
-                BadgeBadgeId: badge.badgeId,
-                UserUserId: post.userId
-              }
-            })
-          }
-
-          const postCreated = await Post.create(post)
-          return { postCreated: postCreated }
+      const badge = await Badge.findOne({ where: { badgeName: post.badgeName }, raw: true })
+      if (!badge) {
+        return {
+          message: 'Badge not found',
+          isError: true
         }
+      }
 
-        let isComplete = false
+      console.log('1')
 
-        // Check if a user is posting on a completed challenge
+      // UserBadge not found
 
-        if (userBadge.daysLeft === 0) {
+      let userBadge = await UserBadge.findOne({
+        where: {
+          UserUserId: post.userId,
+          BadgeBadgeId: badge.badgeId
+        },
+        raw: true
+      })
+
+      if (userBadge) {
+        if (userBadge.inProgress === false) {
           post.postNumber = null
-          const postCreated = await Post.create(post)
-          isComplete = true
+          postCreated = await Post.create(post)
           return {
-            message: 'This challenge has been completed by you',
+            message: 'Posting on a completed challenge.',
             postCreated,
-            isComplete
+            isComplete: !(userBadge.inProgress)
           }
         }
 
-        // If more posts are posted on the same day for a badge
-
-        const date = new Date(new Date().setHours(0, 0, 0, 0))
-        date.setUTCHours(0, 0, 0)
-
-        const lastPost = await Post.findOne({ where: { userId: post.userId, badgeName: post.badgeName, postNumber: (badge.days - userBadge.daysLeft) }, raw: true })
-
-        const postnCreated = new Date(new Date(lastPost.createdAt).setUTCHours(0, 0, 0))
-
-        if (!(date - postnCreated)) {
-          post.postNumber = null
-          const postNewCreated = await Post.create(post)
-          return { message: 'You already posted for today, created this as a new post in the badge', postCreated: postNewCreated }
-        }
-
-        // Let user start the badge afresh if his streak is broken
-
-        const post1 = await Post.findOne({
+        const lastPost = await Post.findOne({
           where: {
             userId: post.userId,
             badgeName: post.badgeName,
-            postNumber: 1
+            postNumber: (badge.days - userBadge.daysLeft)
           },
           raw: true
         })
-        const post1Created = new Date(new Date(post1.createdAt).setUTCHours(0, 0, 0))
 
-        const diff = (date - post1Created) / (24 * 3600 * 1000)
-        const daysCompleted = (badge.days - userBadge.daysLeft)
+        if (lastPost) {
+          const date = new Date()
+          const diff = await this.dateDiffInDays(lastPost.createDate, date)
 
-        if (diff > daysCompleted) {
-          const allPosts = await Post.findAll({ where: { userId: post.userId, badgeName: post.badgeName }, raw: true })
+          if (!diff) {
+            post.postNumber = null
+            const postNewCreated = await Post.create(post)
+            return {
+              message: 'You already posted for today, created this as a new post in the badge',
+              postCreated: postNewCreated
+            }
+          }
 
-          await Promise.all(allPosts.map(async (postk) => {
-            postk.postNumber = null
-            await Post.update(postk, { where: { postId: postk.postId, userId: postk.userId, badgeName: postk.badgeName } })
-          }))
+          if (diff > 1) {
+            return {
+              message: 'Streak broken : either restart streak or use points to continue, Post was not made yet',
+              isStreakBroken: true
+            }
+          }
+        }
+      }
+
+      const userBadgeContent = {}
+
+      if (!userBadge) {
+        const userBadgeContent = {
+          UserUserId: post.userId,
+          BadgeBadgeId: badge.badgeId,
+          inProgress: true,
+          daysLeft: badge.days
+        }
+        userBadge = await UserBadge.create(userBadgeContent)
+      }
+
+      // Update userBadge
+      const t = userBadge.daysLeft - 1
+      userBadgeContent.daysLeft = t
+
+      message = 'Created post'
+
+      // Check if challenge is over
+
+      if (userBadgeContent.daysLeft === 0) {
+        userBadgeContent.inProgress = false
+        message = 'Hurray!! You have completed the challenge'
+      }
+
+      post.postNumber = badge.days - userBadgeContent.daysLeft
+
+      console.log('1')
+
+      postCreated = await Post.create(post).catch(err => console.log(err))
+
+      console.log('2')
+
+      const updatedUserBadge = await UserBadge.update(userBadgeContent, {
+        where: {
+          BadgeBadgeId: badge.badgeId,
+          UserUserId: post.userId
+        }
+      })
+
+      return {
+        message,
+        postCreated,
+        updatedUserBadge,
+        isComplete: (!userBadgeContent.inProgress)
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
+
+  static async restartToContinue (post) {
+    try {
+      if (post.badgeName) {
+        const allPosts = await Post.findAll({
+          where: { userId: post.userId, badgeName: post.badgeName },
+          raw: true
+        })
+        const badge = await Badge.findOne({
+          where: { badgeName: post.badgeName },
+          raw: true
+        })
+
+        if (!badge) {
+          return {
+            message: 'No such badge exists'
+          }
+        }
+
+        if (allPosts) {
+          await Promise.all(
+            allPosts.map(async (postk) => {
+              postk.postNumber = null
+              await Post.update(postk, {
+                where: {
+                  postId: postk.postId,
+                  userId: postk.userId,
+                  badgeName: postk.badgeName
+                }
+              })
+            })
+          )
 
           const updateUserBadge = {
             BadgeBadgeId: badge.badgeId,
@@ -113,25 +195,79 @@ class PostsController {
             daysLeft: badge.days - 1,
             inProgress: true
           }
-          userBadge = await UserBadge.update(updateUserBadge, {
+
+          await UserBadge.update(updateUserBadge, {
             where: {
               BadgeBadgeId: badge.badgeId,
               UserUserId: post.userId
             }
           })
+
           post.postNumber = badge.days - updateUserBadge.daysLeft
           const postNewCreated = await Post.create(post)
-          return { message: 'You had broken the streak, so starting a new streak', postCreated: postNewCreated }
+          return {
+            message: 'You had broken the streak, so starting a new streak',
+            postCreated: postNewCreated
+          }
         }
+        return {
+          message: "Posts for that badge don't exist",
+          isError: true
+        }
+      }
+      return {
+        message: "Badge doesn't exist",
+        isError: true
+      }
+    } catch (e) {
+      logger.error(e)
+      return {
+        isError: true,
+        message: e.toString()
+      }
+    }
+  }
 
-        // create new post under badge and check if it is last post, or if challenge is completed
+  static async usePointsToContinue (post) {
+    try {
+      if (post.badgeName) {
+        const badge = await Badge.findOne({
+          where: { badgeName: post.badgeName },
+          raw: true
+        })
+        const userBadge = await UserBadge.findOne({
+          where: { BadgeBadgeId: badge.badgeId, UserUserId: post.userId }
+        })
+        const user = await User.findOne({
+          where: { userId: post.userId },
+          raw: true
+        })
+        if (!userBadge) {
+          return {
+            message: 'Create a post using post request before you use this route to maintain a streak'
+          }
+        }
+        if (userBadge.daysLeft <= 0) {
+          post.postNumber = null
+          const postNewCreated = await Post.create(post)
+          return {
+            message: 'Badge already completed by you',
+            postNewCreated
+          }
+        }
+        const newUser = {}
+        newUser.points = user.points - DEDUCT_POINTS
+
+        await User.update(newUser, { where: { userId: post.userId } })
+
+        const deduct = `${DEDUCT_POINTS} points were deducted from your account`
 
         const obj = {
           daysLeft: userBadge.daysLeft - 1
         }
 
         let message = `${obj.daysLeft} day(s) is/are left for your challenge`
-
+        let isComplete = false
         if (obj.daysLeft === 0) {
           obj.inProgress = false
           message = 'Congratulations!! You completed the challenge'
@@ -146,13 +282,12 @@ class PostsController {
         })
         post.postNumber = badge.days - userBadge.daysLeft + 1
         const postCreated = await Post.create(post)
-        return { postCreated: postCreated, resp: resp, message, isComplete }
+        return { postCreated, resp, message, isComplete, deduct }
       }
-
-      // without badge post
-
-      const postCreated = await Post.create(post)
-      return { postCreated: postCreated }
+      return {
+        message: "Badge doesn't exist",
+        isError: true
+      }
     } catch (e) {
       logger.error(e)
       return {
@@ -191,7 +326,6 @@ class PostsController {
 
       if (updation.tags) {
         updation.tags = updation.tags.split(',')
-        updation.tags = updation.tags.concat(post.tags)
       }
 
       if (updation.upvotes) {
@@ -228,7 +362,9 @@ class PostsController {
         const deleted = await Post.destroy({ where: { postId } })
         return { deleted }
       }
-      return { message: 'No such posts exist or you are accessing a forbidden resource' }
+      return {
+        message: 'No such posts exist or you are accessing a forbidden resource'
+      }
     } catch (e) {
       logger.error(e)
       return {
@@ -240,7 +376,7 @@ class PostsController {
 
   static async getAllPosts (userId) {
     try {
-      const response = await Post.findAll({ userId })
+      const response = await Post.findAll({ where: { userId } })
       return response
     } catch (e) {
       logger.error(e)
@@ -272,7 +408,10 @@ class PostsController {
       arr.upvotes = post.upvotes
       arr.upvotes.push(userId)
 
-      let user = await User.findOne({ where: { userId: post.userId }, raw: true })
+      let user = await User.findOne({
+        where: { userId: post.userId },
+        raw: true
+      })
       user.points += 1
       user = await User.update(user, { where: { userId: post.userId } })
       post = await Post.update(arr, { where: { postId } })
@@ -298,14 +437,20 @@ class PostsController {
           arr.upvotes = post.upvotes
           arr.upvotes.pop(userId)
 
-          let user = await User.findOne({ where: { userId: post.userId }, raw: true })
+          let user = await User.findOne({
+            where: { userId: post.userId },
+            raw: true
+          })
           user.points -= 1
           user = await User.update(user, { where: { userId: post.userId } })
 
           post = await Post.update(arr, { where: { postId } })
           return { message: 'Vote removed', statusCode: 200 }
         }
-        return { message: 'upvote before you remove the vote', statusCode: 409 }
+        return {
+          message: 'upvote before you remove the vote',
+          statusCode: 409
+        }
       }
       return { message: "Posts doesn't exist", statusCode: 404 }
     } catch (e) {
@@ -337,16 +482,21 @@ class PostsController {
 
   static async getComments (postId) {
     try {
-      let comments = await Comment.findAll({ where: { postId: postId }, raw: true })
+      let comments = await Comment.findAll({
+        where: { postId: postId },
+        raw: true
+      })
       let user
-      comments = await Promise.all(comments.map(async (comment) => {
-        user = await User.findOne({
-          where: { userName: comment.userName },
-          raw: true
+      comments = await Promise.all(
+        comments.map(async (comment) => {
+          user = await User.findOne({
+            where: { userName: comment.userName },
+            raw: true
+          })
+          comment.picture = user.picture
+          return comment
         })
-        comment.picture = user.picture
-        return comment
-      }))
+      )
       return { comments }
     } catch (e) {
       logger.error(e)
@@ -366,7 +516,9 @@ class PostsController {
         const user = await User.findByPk(userId)
 
         if (user.userName === commentExists.userName) {
-          const _ = Comment.update(comment, { where: { commentId: commentId } })
+          const _ = Comment.update(comment, {
+            where: { commentId: commentId }
+          })
           return { updatedComment: 'Updated' }
         }
         return {
@@ -426,18 +578,26 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      const posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId }
+      let posts = await Promise.all(
+        users.map(async (user) => {
+          let post = await Post.findAll({
+            where: { userId: user.userId }
+          })
+          post = post.sort((a, b) => b.createDate - a.createDate)
+
+          const last = post[0]
+          if (last) {
+            last.setDataValue('points', user.points)
+            last.setDataValue('username', user.userName)
+            last.setDataValue('picture', user.picture)
+          }
+          return last
         })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-          last.setDataValue('picture', user.picture)
-        }
-        return last
-      }))
+      )
+
+      posts = posts.filter(function (e) {
+        return e != null
+      })
 
       return { posts }
     } catch (e) {
@@ -454,20 +614,27 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId }
+      let posts = await Promise.all(
+        users.map(async (user) => {
+          let post = await Post.findAll({
+            where: { userId: user.userId }
+          })
+          post = post.sort((a, b) => b.createDate - a.createDate)
+          const last = post[0]
+          if (last) {
+            last.setDataValue('points', user.points)
+            last.setDataValue('username', user.userName)
+            last.setDataValue('picture', user.picture)
+          }
+          return last
         })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-          last.setDataValue('picture', user.picture)
-        }
-        return last
-      }))
+      )
       const num = parseInt(noOfUsers)
-      posts = posts.filter(function (e) { return e != null })
+
+      posts = posts.filter(function (e) {
+        return e != null
+      })
+
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
@@ -484,22 +651,26 @@ class PostsController {
       let users = await User.findAll()
 
       users = await this.sortXByY(users)
-      let posts = await Promise.all(users.map(async (user) => {
-        const post = await Post.findAll({
-          where: { userId: user.userId, badgeName: badge.badgeName }
+      let posts = await Promise.all(
+        users.map(async (user) => {
+          const post = await Post.findAll({
+            where: { userId: user.userId, badgeName: badge.badgeName }
+          })
+          const last = post[post.length - 1]
+          if (last) {
+            last.setDataValue('points', user.points)
+            last.setDataValue('username', user.userName)
+            last.setDataValue('picture', user.picture)
+          }
+          return last
         })
-        const last = post[post.length - 1]
-        if (last) {
-          last.setDataValue('points', user.points)
-          last.setDataValue('username', user.userName)
-          last.setDataValue('picture', user.picture)
-        }
-        return last
-      }))
+      )
       const num = parseInt(noOfUsers)
-      posts = posts.filter(post => {
-        return post != null
+
+      posts = posts.filter(function (e) {
+        return e != null
       })
+
       return { posts: posts.slice(0, num) }
     } catch (e) {
       logger.error(e)
@@ -525,6 +696,7 @@ class PostsController {
         }
       }
       const last = post[post.length - 1]
+
       return last
     } catch (e) {
       logger.error(e)
@@ -593,9 +765,17 @@ class PostsController {
   static async filterPostsForBadge (badgeId, userId) {
     try {
       const badge = await Badge.findByPk(badgeId)
-      const response = await Post.findAll({ where: { badgeName: badge.badgeName, userId }, raw: true })
+      const response = await Post.findAll({
+        where: { badgeName: badge.badgeName, userId },
+        raw: true
+      })
       const user = await User.findByPk(userId)
-      return { picture: user.picture, userName: user.userName, response, statusCode: 200 }
+      return {
+        picture: user.picture,
+        userName: user.userName,
+        response,
+        statusCode: 200
+      }
     } catch (e) {
       logger.error(e)
       return {
@@ -608,13 +788,36 @@ class PostsController {
 
   static async getFollowerLatestPosts (userId) {
     try {
-      const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+      const following = await Follow.findAll({
+        where: { followerId: userId },
+        raw: true
+      })
 
-      const posts = await Promise.all(following.map(async (f) => {
-        const post = await Post.findAll({ where: { userId: f.followingId } })
-        const user = await User.findOne({ where: { userId: f.followingId } })
-        return { user, postList: post[0] }
-      }))
+      let posts = await Promise.all(
+        following.map(async (f) => {
+          let post = await Post.findAll({
+            where: { userId: f.followingId },
+            raw: true
+          })
+          const user = await User.findOne({
+            where: { userId: f.followingId },
+            raw: true
+          })
+          post = post.sort((a, b) => b.createDate - a.createDate)
+
+          const latestPost = post[0]
+          if (post[0]) {
+            latestPost.userName = user.userName
+            latestPost.picture = user.picture
+            latestPost.points = user.points
+          }
+          return latestPost
+        })
+      )
+
+      posts = posts.filter(function (e) {
+        return e != null
+      })
 
       return { posts, statusCode: 200 }
     } catch (e) {
@@ -629,13 +832,20 @@ class PostsController {
 
   static async getFollowerPosts (userId) {
     try {
-      const following = await Follow.findAll({ where: { followerId: userId }, raw: true })
+      const following = await Follow.findAll({
+        where: { followerId: userId },
+        raw: true
+      })
 
-      const posts = await Promise.all(following.map(async (f) => {
-        const postList = await Post.findAll({ where: { userId: f.followingId } })
-        const user = await User.findOne({ where: { userId: f.followingId } })
-        return { user, postList }
-      }))
+      const posts = await Promise.all(
+        following.map(async (f) => {
+          const postList = await Post.findAll({
+            where: { userId: f.followingId }
+          })
+          const user = await User.findOne({ where: { userId: f.followingId } })
+          return { user, postList }
+        })
+      )
 
       return { posts, statusCode: 200 }
     } catch (e) {

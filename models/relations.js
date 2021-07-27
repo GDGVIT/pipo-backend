@@ -6,13 +6,8 @@ const Post = require('./post')
 const Comment = require('./comment')
 const Follow = require('./follow')
 // const Challange = require('./challange')
-
-User.Badge = User.belongsToMany(Badge, {
-  through: UserBadge
-})
-Badge.User = Badge.belongsToMany(User, {
-  through: UserBadge
-})
+// const sequelize = require('../db/db')
+// sequelize.sync({ alter: true })
 
 User.Post = User.hasMany(Post, {
   foreignKey: 'userId',
@@ -21,6 +16,17 @@ User.Post = User.hasMany(Post, {
 Post.User = Post.belongsTo(User, {
   foreignKey: 'userId',
   type: DataTypes.UUID
+})
+
+User.Badge = User.belongsToMany(Badge, {
+  through: UserBadge,
+  foreignKey: 'UserUserId',
+  constraints: false
+})
+Badge.User = Badge.belongsToMany(User, {
+  through: UserBadge,
+  foreignKey: 'BadgeBadgeId',
+  constraints: false
 })
 
 Post.Comment = Post.hasMany(Comment, {

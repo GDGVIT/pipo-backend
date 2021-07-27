@@ -1,14 +1,16 @@
 const { User, Follow } = require('../models/relations')
 
-const admin = require('firebase-admin')
+// const admin = require('firebase-admin')
 const logger = require('../logging/logger')
 
-const serviceAccount = require('../firebase.json')
+// const serviceAccount = require('../firebase.json')
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
-})
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: 'https://pipo-api-oauth-default-rtdb.europe-west1.firebasedatabase.app'
+// })
+
+const admin = require('../config')
 
 const USERNAME_LENGTH_LIMIT = 10
 
@@ -51,8 +53,8 @@ class UserController {
         email,
         name,
         picture,
-        points: 20,
-        isAdmin: false,
+        points: 2000000,
+        isAdmin: true,
         userName
       }
 
@@ -176,7 +178,7 @@ class UserController {
   }
 
   static checkUserName (username) {
-    const re = new RegExp(`^[A-Za-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
+    const re = new RegExp(`^[a-z0-9_@./#&+-]{1,${USERNAME_LENGTH_LIMIT}}$`)
     return re.test(username)
   };
 
@@ -196,15 +198,23 @@ class UserController {
             message: 'User with that userName already exists. Please choose a different userName'
           }
         }
+
+        user.userName = user.userName.replace(/ /g, '_')
+        user.userName = user.userName.toLowerCase()
+
         if (!this.checkUserName(user.userName)) {
           return {
-            message: `userName provided doesn't meet the restriction set: characters allowed = [A-Za-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`
+            message: `userName provided doesn't meet the restriction set: characters allowed = [a-z0-9_@./#&+-]; {min length, max length} = {1,${USERNAME_LENGTH_LIMIT}`
           }
         }
       }
 
       if (user.isAdmin) {
         user.isAdmin = false
+      }
+
+      if (user.points) {
+        delete user.points
       }
 
       const resp = await User.update(user, {

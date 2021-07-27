@@ -5,6 +5,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 const db = require('./db/db').default
 const morgan = require('./logging/morgan')
+const rateLimit = require('express-rate-limit')
 
 require('./models/relations')
 
@@ -21,10 +22,19 @@ const app = express()
 // Connection
 app.locals.db = db
 
+app.set('trust proxy', 1)
+
+const limiter = rateLimit({
+  windowMs: process.env.RATE_LIMITTING_TIME, // 15 minutes
+  max: process.env.RATE_LIMITTING_MAX
+})
+
 // Middlewares
 app.use(express.json())
 app.use(compression())
 app.use(cors())
+app.use(limiter)
+
 // Logging
 app.use(morgan)
 
